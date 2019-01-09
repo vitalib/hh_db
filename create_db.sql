@@ -1,8 +1,3 @@
-/*
-DROP DATABASE IF EXISTS hh_homework;
-
-CREATE DATABASE hh_homework;
-*/
 \c hh_homework;
 
 -- Table: skills
