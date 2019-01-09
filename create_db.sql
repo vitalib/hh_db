@@ -1,315 +1,155 @@
--- Last modification date: 2019-01-07 11:21:57.799
-
--- tables
--- Table: communication_status
+/*
 DROP DATABASE IF EXISTS hh_homework;
 
 CREATE DATABASE hh_homework;
+*/
 \c hh_homework;
 
-CREATE TABLE communication_status (
+-- Table: skills
+CREATE TABLE skills (
     id serial PRIMARY KEY,
-    status_name varchar(50)  NOT NULL,
-    CONSTRAINT communication_status_pk PRIMARY KEY (id)
-);
-
--- Table: company
-CREATE TABLE company (
-    id serial  NOT NULL,
-    company_name varchar(100)  NOT NULL,
-    profile_description varchar(1000)  NOT NULL,
-    creation_date date  NOT NULL,
-    company_website_url varchar(500)  NOT NULL,
-    CONSTRAINT company_pk PRIMARY KEY (id)
-);
-
--- Table: educations
-CREATE TABLE educations (
-    course_name varchar(50)  NOT NULL,
-    start_date date  NOT NULL,
-    end_date date  NULL,
-    resumes_id integer  NOT NULL,
-    description varchar(1000)  NULL,
-    CONSTRAINT educations_pk PRIMARY KEY (course_name,start_date,resumes_id)
-);
-
--- Table: experience_detail
-CREATE TABLE experience_detail (
-    resumes_id integer  NOT NULL,
-    is_current_job boolean  NOT NULL,
-    start_date date  NOT NULL,
-    end_date date  NULL,
-    job_title varchar(50)  NOT NULL,
-    company_name varchar(100)  NOT NULL,
-    description varchar(4000)  NOT NULL,
-    job_location_id integer  NOT NULL,
-    CONSTRAINT experience_detail_pk PRIMARY KEY (resumes_id,start_date)
-);
-
--- Table: invitations
-CREATE TABLE invitations (
-    meeting_time timestamp  NOT NULL,
-    message varchar(1000)  NOT NULL,
-    resumes_id int  NOT NULL,
-    vacancies_id int  NOT NULL,
-    communication_status_id integer  NOT NULL,
-    CONSTRAINT invitations_pk PRIMARY KEY (resumes_id,vacancies_id)
+    skill_name varchar(50)  NOT NULL
 );
 
 -- Table: job_location
 CREATE TABLE job_location (
-    id serial  NOT NULL,
+    id serial PRIMARY KEY,
     street_address varchar(100)  NOT NULL,
     city varchar(50)  NOT NULL,
     state varchar(50)  NOT NULL,
     country varchar(50)  NOT NULL,
-    zip varchar(50)  NOT NULL,
-    CONSTRAINT job_location_pk PRIMARY KEY (id)
-);
-
--- Table: job_type
-CREATE TABLE job_type (
-    id serial  NOT NULL,
-    job_type varchar(20)  NOT NULL,
-    CONSTRAINT job_type_pk PRIMARY KEY (id)
-);
-
--- Table: responds
-CREATE TABLE responds (
-    vacancies_id integer  NOT NULL,
-    apply_date date  NOT NULL,
-    message varchar(1000)  NOT NULL,
-    resumes_id int  NOT NULL,
-    communication_status_id integer  NOT NULL,
-    CONSTRAINT responds_pk PRIMARY KEY (vacancies_id,resumes_id)
-);
-
--- Table: resume_skills_set
-CREATE TABLE resume_skills_set (
-    resumes_id integer  NOT NULL,
-    skills_id integer  NOT NULL,
-    skill_level integer  NOT NULL,
-    CONSTRAINT resume_skills_set_pk PRIMARY KEY (resumes_id,skills_id)
-);
-
--- Table: resumes
-CREATE TABLE resumes (
-    id serial  NOT NULL,
-    users_id integer  NOT NULL,
-    first_name varchar(50)  NOT NULL,
-    middle_name varchar(50)  NULL,
-    last_name varchar(50)  NOT NULL,
-    min_salary integer  NULL,
-    max_salary integer  NULL,
-    currency varchar(50)  NULL,
-    age integer  NOT NULL,
-    CONSTRAINT resumes_pk PRIMARY KEY (id)
-);
-
--- Table: skills
-CREATE TABLE skills (
-    id serial  NOT NULL,
-    skill_name varchar(50)  NOT NULL,
-    CONSTRAINT skills_pk PRIMARY KEY (id)
+    zip varchar(50)  NOT NULL
 );
 
 -- Table: user_type
 CREATE TABLE user_type (
-    id serial  NOT NULL,
-    user_type_name varchar(20)  NOT NULL,
-    CONSTRAINT user_type_pk PRIMARY KEY (id)
+    id serial PRIMARY KEY,
+    user_type_name varchar(20)  NOT NULL CHECK (length(user_type_name) > 0)
 );
 
 -- Table: users
 CREATE TABLE users (
-    id serial  NOT NULL,
-    user_type_id integer  NOT NULL,
-    login varchar(100)  NOT NULL,
+    id serial PRIMARY KEY, 
+    user_type_id integer REFERENCES user_type(id), 
+    login varchar(100)  NOT NULL CHECK (length(login) > 7) UNIQUE,
     password varchar(100)  NOT NULL,
-    email varchar(255)  NOT NULL,
+    email varchar(255)  NOT NULL UNIQUE,
     is_active boolean  NOT NULL,
-    registration_date date  NOT NULL,
+    registration_date timestamp NOT NULL,
     last_login_date timestamp  NOT NULL,
-    CONSTRAINT users_pk PRIMARY KEY (id)
+    CHECK (registration_date <= last_login_date)
+);
+
+-- Table statuses
+CREATE TABLE statuses(
+    id serial PRIMARY KEY,
+    name varchar(50) NOT NULL
+);
+-- Table: resumes
+CREATE TABLE resumes (
+    id serial PRIMARY KEY, 
+    users_id integer REFERENCES users(id),
+    first_name varchar(50)  NOT NULL CHECK (length(first_name) > 0),
+    middle_name varchar(50)  NULL,
+    last_name varchar(50)  NOT NULL CHECK (length(last_name) > 0),
+    min_salary integer  NULL,
+    max_salary integer  NULL,
+    currency varchar(50)  NULL,
+    age integer NOT NULL CHECK (age > 13 AND age < 110),
+    statuses_id integer REFERENCES statuses(id) DEFAULT 1
+);
+
+CREATE TABLE communication_status (
+    id serial PRIMARY KEY,
+    status_name varchar(50)  NOT NULL
+);
+
+-- Table: company
+CREATE TABLE companies (
+    id serial PRIMARY KEY ,
+    company_name varchar(100)  NOT NULL CHECK (length(company_name) > 0),
+    activity_description varchar(1000)  NOT NULL,
+    creation_date date  NOT NULL,
+    company_website_url varchar(500)  NOT NULL
+);
+
+-- Table: educations
+CREATE TABLE educations (
+    resumes_id integer REFERENCES resumes(id), 
+    course_name varchar(50),
+    start_date date , 
+    end_date date  NULL,
+    description varchar(1000)  NULL,
+    PRIMARY KEY(resumes_id, course_name, start_date)
+);
+
+-- Table: experience_detail
+CREATE TABLE experience_details (
+    resumes_id integer REFERENCES resumes(id), 
+    start_date date, 
+    is_current_job boolean NOT NULL,
+    end_date date NULL,
+    job_title varchar(50) NOT NULL,
+    company_name varchar(100) NOT NULL,
+    description varchar(4000) NOT NULL,
+    job_location_id integer REFERENCES job_location(id),
+    PRIMARY KEY(resumes_id, start_date, job_title)
+);
+
+-- Table: job_type
+CREATE TABLE job_type (
+    id serial PRIMARY KEY,
+    job_type varchar(20)  NOT NULL
 );
 
 -- Table: vacancies
 CREATE TABLE vacancies (
-    id serial  NOT NULL,
-    posted_by_id integer  NOT NULL,
-    job_type_id integer  NOT NULL,
-    company_id integer  NOT NULL,
+    id serial PRIMARY KEY,
+    posted_by_id integer REFERENCES users(id),
+    job_type_id integer REFERENCES job_type(id),
+    companies_id integer  REFERENCES companies(id),
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
-    job_location_id integer  NOT NULL,
-    is_active boolean  NOT NULL,
+    job_location_id integer REFERENCES job_location(id),
+    statuses_id integer REFERENCES statuses(id) DEFAULT 1,
     min_salary integer  NULL,
     max_salary integer  NULL,
     publication_time timestamp  NOT NULL,
-    expiry_time timestamp  NOT NULL,
-    CONSTRAINT vacancies_pk PRIMARY KEY (id)
+    expiry_time timestamp NULL
 );
 
--- Table: vacancy_skill_set
-CREATE TABLE vacancy_skill_set (
-    skills_id integer  NOT NULL,
-    vacancy_id integer  NOT NULL,
-    skill_level integer  NOT NULL,
-    CONSTRAINT vacancy_skill_set_pk PRIMARY KEY (skills_id,vacancy_id)
+-- Table: invitations
+CREATE TABLE invitations (
+    resumes_id integer REFERENCES resumes(id),
+    vacancies_id integer REFERENCES vacancies(id),
+    meeting_time timestamp  NOT NULL,
+    message varchar(1000)  NULL,
+    communication_status_id integer  NOT NULL,
+    PRIMARY KEY(resumes_id, vacancies_id)
 );
 
--- foreign keys
--- Reference: educations_resumes (table: educations)
-ALTER TABLE educations ADD CONSTRAINT educations_resumes
-    FOREIGN KEY (resumes_id)
-    REFERENCES resumes (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
+-- Table: responds
+CREATE TABLE responds (
+    vacancies_id integer REFERENCES vacancies(id),
+    resumes_id integer REFERENCES resumes(id),
+    apply_date timestamp NOT NULL,
+    message varchar(1000) NULL,
+    communication_status_id integer NOT NULL,
+    PRIMARY KEY(vacancies_id, resumes_id)
+);
 
--- Reference: exp_dtl_seeker_profile (table: experience_detail)
-ALTER TABLE experience_detail ADD CONSTRAINT exp_dtl_seeker_profile
-    FOREIGN KEY (resumes_id)
-    REFERENCES resumes (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
+-- Table: resume_skills_set
+CREATE TABLE resume_skills_set (
+    resumes_id integer REFERENCES resumes(id),
+    skills_id integer REFERENCES skills(id),
+    skill_level integer NOT NULL check (skill_level >= 0 AND skill_level < 11),
+    PRIMARY KEY(resumes_id, skills_id)
+);
 
--- Reference: experience_detail_job_location (table: experience_detail)
-ALTER TABLE experience_detail ADD CONSTRAINT experience_detail_job_location
-    FOREIGN KEY (job_location_id)
-    REFERENCES job_location (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: invitations_communication_status (table: invitations)
-ALTER TABLE invitations ADD CONSTRAINT invitations_communication_status
-    FOREIGN KEY (communication_status_id)
-    REFERENCES communication_status (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: invitations_resumes (table: invitations)
-ALTER TABLE invitations ADD CONSTRAINT invitations_resumes
-    FOREIGN KEY (resumes_id)
-    REFERENCES resumes (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: invitations_vacancies (table: invitations)
-ALTER TABLE invitations ADD CONSTRAINT invitations_vacancies
-    FOREIGN KEY (vacancies_id)
-    REFERENCES vacancies (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_activity_job_post (table: responds)
-ALTER TABLE responds ADD CONSTRAINT job_post_activity_job_post
-    FOREIGN KEY (vacancies_id)
-    REFERENCES vacancies (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_company (table: vacancies)
-ALTER TABLE vacancies ADD CONSTRAINT job_post_company
-    FOREIGN KEY (company_id)
-    REFERENCES company (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_job_location (table: vacancies)
-ALTER TABLE vacancies ADD CONSTRAINT job_post_job_location
-    FOREIGN KEY (job_location_id)
-    REFERENCES job_location (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_job_type (table: vacancies)
-ALTER TABLE vacancies ADD CONSTRAINT job_post_job_type
-    FOREIGN KEY (job_type_id)
-    REFERENCES job_type (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_skill_set_job_post (table: vacancy_skill_set)
-ALTER TABLE vacancy_skill_set ADD CONSTRAINT job_post_skill_set_job_post
-    FOREIGN KEY (vacancy_id)
-    REFERENCES vacancies (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_skill_set_skill_set (table: vacancy_skill_set)
-ALTER TABLE vacancy_skill_set ADD CONSTRAINT job_post_skill_set_skill_set
-    FOREIGN KEY (skills_id)
-    REFERENCES skills (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: job_post_user_register (table: vacancies)
-ALTER TABLE vacancies ADD CONSTRAINT job_post_user_register
-    FOREIGN KEY (posted_by_id)
-    REFERENCES users (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: responds_communication_status (table: responds)
-ALTER TABLE responds ADD CONSTRAINT responds_communication_status
-    FOREIGN KEY (communication_status_id)
-    REFERENCES communication_status (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: responds_resumes (table: responds)
-ALTER TABLE responds ADD CONSTRAINT responds_resumes
-    FOREIGN KEY (resumes_id)
-    REFERENCES resumes (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: seeker_profile_user_register (table: resumes)
-ALTER TABLE resumes ADD CONSTRAINT seeker_profile_user_register
-    FOREIGN KEY (users_id)
-    REFERENCES users (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: seeker_skill_set_skill_set (table: resume_skills_set)
-ALTER TABLE resume_skills_set ADD CONSTRAINT seeker_skill_set_skill_set
-    FOREIGN KEY (skills_id)
-    REFERENCES skills (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: skill_set_seeker_profile (table: resume_skills_set)
-ALTER TABLE resume_skills_set ADD CONSTRAINT skill_set_seeker_profile
-    FOREIGN KEY (resumes_id)
-    REFERENCES resumes (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- Reference: user_register_user_type (table: users)
-ALTER TABLE users ADD CONSTRAINT user_register_user_type
-    FOREIGN KEY (user_type_id)
-    REFERENCES user_type (id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
-
--- End of file.
-
+-- Table: vacancy_skills_set
+CREATE TABLE vacancy_skills_set (
+    skills_id integer REFERENCES skills(id),
+    vacancies_id integer REFERENCES vacancies(id),
+    skill_level integer NOT NULL CHECK (skill_level >= 0 AND skill_level < 11),
+    PRIMARY KEY(skills_id, vacancies_id)
+);
