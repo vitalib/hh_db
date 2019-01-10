@@ -1,7 +1,7 @@
 \c hh_homework;
 
--- Table: skills
-CREATE TABLE skills (
+-- Table: skill
+CREATE TABLE skill (
     id serial PRIMARY KEY,
     skill_name varchar(50)  NOT NULL
 );
@@ -35,13 +35,13 @@ CREATE TABLE users (
     CHECK (registration_date <= last_login_date)
 );
 
--- Table statuses
-CREATE TABLE statuses(
+-- Table status
+CREATE TABLE status(
     id serial PRIMARY KEY,
     name varchar(50) NOT NULL
 );
--- Table: resumes
-CREATE TABLE resumes (
+-- Table: resume
+CREATE TABLE resume (
     id serial PRIMARY KEY, 
     users_id integer REFERENCES users(id),
     first_name varchar(50)  NOT NULL CHECK (length(first_name) > 0),
@@ -51,7 +51,7 @@ CREATE TABLE resumes (
     max_salary integer  NULL,
     currency varchar(50)  NULL,
     age integer NOT NULL CHECK (age > 13 AND age < 110),
-    statuses_id integer REFERENCES statuses(id) DEFAULT 1
+    status_id integer REFERENCES status(id) DEFAULT 1
 );
 
 CREATE TABLE communication_status (
@@ -60,7 +60,7 @@ CREATE TABLE communication_status (
 );
 
 -- Table: company
-CREATE TABLE companies (
+CREATE TABLE company (
     id serial PRIMARY KEY ,
     company_name varchar(100)  NOT NULL CHECK (length(company_name) > 0),
     activity_description varchar(1000)  NOT NULL,
@@ -68,19 +68,19 @@ CREATE TABLE companies (
     company_website_url varchar(500)  NOT NULL
 );
 
--- Table: educations
-CREATE TABLE educations (
-    resumes_id integer REFERENCES resumes(id), 
+-- Table: education
+CREATE TABLE education (
+    resume_id integer REFERENCES resume(id), 
     course_name varchar(50),
     start_date date , 
     end_date date  NULL,
     description varchar(1000)  NULL,
-    PRIMARY KEY(resumes_id, course_name, start_date)
+    PRIMARY KEY(resume_id, course_name, start_date)
 );
 
 -- Table: experience_detail
-CREATE TABLE experience_details (
-    resumes_id integer REFERENCES resumes(id), 
+CREATE TABLE experience_detail (
+    resume_id integer REFERENCES resume(id), 
     start_date date, 
     is_current_job boolean NOT NULL,
     end_date date NULL,
@@ -88,7 +88,7 @@ CREATE TABLE experience_details (
     company_name varchar(100) NOT NULL,
     description varchar(4000) NOT NULL,
     job_location_id integer REFERENCES job_location(id),
-    PRIMARY KEY(resumes_id, start_date, job_title)
+    PRIMARY KEY(resume_id, start_date, job_title)
 );
 
 -- Table: job_type
@@ -97,54 +97,54 @@ CREATE TABLE job_type (
     job_type varchar(20)  NOT NULL
 );
 
--- Table: vacancies
-CREATE TABLE vacancies (
+-- Table: vacancy
+CREATE TABLE vacancy (
     id serial PRIMARY KEY,
     posted_by_id integer REFERENCES users(id),
     job_type_id integer REFERENCES job_type(id),
-    companies_id integer  REFERENCES companies(id),
+    company_id integer  REFERENCES company(id),
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
     job_location_id integer REFERENCES job_location(id),
-    statuses_id integer REFERENCES statuses(id) DEFAULT 1,
+    status_id integer REFERENCES status(id) DEFAULT 1,
     min_salary integer  NULL,
     max_salary integer  NULL,
     publication_time timestamp  NOT NULL,
     expiry_time timestamp NULL
 );
 
--- Table: invitations
-CREATE TABLE invitations (
-    resumes_id integer REFERENCES resumes(id),
-    vacancies_id integer REFERENCES vacancies(id),
+-- Table: invitation
+CREATE TABLE invitation (
+    resume_id integer REFERENCES resume(id),
+    vacancy_id integer REFERENCES vacancy(id),
     meeting_time timestamp  NOT NULL,
     message varchar(1000)  NULL,
     communication_status_id integer  NOT NULL,
-    PRIMARY KEY(resumes_id, vacancies_id)
+    PRIMARY KEY(resume_id, vacancy_id)
 );
 
--- Table: responds
-CREATE TABLE responds (
-    vacancies_id integer REFERENCES vacancies(id),
-    resumes_id integer REFERENCES resumes(id),
+-- Table: respond
+CREATE TABLE respond (
+    vacancy_id integer REFERENCES vacancy(id),
+    resume_id integer REFERENCES resume(id),
     apply_date timestamp NOT NULL,
     message varchar(1000) NULL,
     communication_status_id integer NOT NULL,
-    PRIMARY KEY(vacancies_id, resumes_id)
+    PRIMARY KEY(vacancy_id, resume_id)
 );
 
--- Table: resume_skills_set
-CREATE TABLE resume_skills_set (
-    resumes_id integer REFERENCES resumes(id),
-    skills_id integer REFERENCES skills(id),
+-- Table: resume_skill_set
+CREATE TABLE resume_skill_set (
+    resume_id integer REFERENCES resume(id),
+    skill_id integer REFERENCES skill(id),
     skill_level integer NOT NULL check (skill_level >= 0 AND skill_level < 11),
-    PRIMARY KEY(resumes_id, skills_id)
+    PRIMARY KEY(resume_id, skill_id)
 );
 
--- Table: vacancy_skills_set
-CREATE TABLE vacancy_skills_set (
-    skills_id integer REFERENCES skills(id),
-    vacancies_id integer REFERENCES vacancies(id),
+-- Table: vacancy_skill_set
+CREATE TABLE vacancy_skill_set (
+    skill_id integer REFERENCES skill(id),
+    vacancy_id integer REFERENCES vacancy(id),
     skill_level integer NOT NULL CHECK (skill_level >= 0 AND skill_level < 11),
-    PRIMARY KEY(skills_id, vacancies_id)
+    PRIMARY KEY(skill_id, vacancy_id)
 );

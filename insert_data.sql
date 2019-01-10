@@ -33,8 +33,8 @@ INSERT INTO users (user_type_id, login, password, email, is_active,
 
 
 
--- Table: skills
-INSERT INTO skills (skill_name)
+-- Table: skill
+INSERT INTO skill (skill_name)
     VALUES ('letter of credit'), ('currency control'), ('java'), ('python'), ('postgres'), ('javascript'), ('go');
 
 
@@ -49,12 +49,12 @@ INSERT INTO job_location
         ('Smirnovskaya, 15', 'Moscow', 'Moscow', 'Russia', '125363'),
         ('Podemnaya, 15', 'Moscow', 'Moscow', 'Russia', '111111');
 
--- Table statuses
-INSERT INTO statuses(name)
+-- Table status
+INSERT INTO status(name)
     VALUES ('Active'), ('Hidden'), ('Archive'), ('Deleted');
 
--- Table: resumes
-INSERT INTO resumes(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age)
+-- Table: resume
+INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age)
     VALUES
         (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', 35),
         (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', 35),
@@ -67,7 +67,7 @@ INSERT INTO communication_status(status_name)
 
 
 -- Table: company
-INSERT INTO companies(company_name, activity_description, creation_date, company_website_url)
+INSERT INTO company(company_name, activity_description, creation_date, company_website_url)
     VALUES
         ('JSC Promsvyazbank', 'Banking', '1992-01-02', 'https://www.psbank.ru'),
         ('Company Prog', 'IT', '2005-05-23', 'https://www.companyit.ru'),
@@ -77,7 +77,7 @@ INSERT INTO companies(company_name, activity_description, creation_date, company
 
 -- Table: educations
 
-INSERT INTO educations (resumes_id, course_name, start_date, end_date, description)
+INSERT INTO education (resume_id, course_name, start_date, end_date, description)
     VALUES
         (1, 'BSEU', '2001-09-01', '2005-06-30', 'Higher Education - Banking Department'),
         (1, 'BSEU', '2006-09-01', '2007-06-30', 'Magist Degrees - Banking Department'),
@@ -86,7 +86,7 @@ INSERT INTO educations (resumes_id, course_name, start_date, end_date, descripti
         (4, 'CSDG', '2010-10-30', '2010-05-15', 'Certfied Specialist for Demant Guaranteees IFS School of London');
 
 -- Table: experience_detail
-INSERT INTO experience_details(resumes_id, start_date, is_current_job, end_date, job_title, company_name, description, job_location_id) VALUES
+INSERT INTO experience_detail(resume_id, start_date, is_current_job, end_date, job_title, company_name, description, job_location_id) VALUES
     (1, '2005-04-30', false, '2008-07-30', 'Head Economist Currency Control Dept', 'ASB Belarusbank', 'Currency Control', 1),
     (1, '2008-11-15', false, '2017-10-15', 'Managing Expert', 'JSC Promsvyazbank', 'Letters of Credit', 2),
     (4, '2006-11-15', false, '2010-10-15', 'Head Economist', 'JSC Promsvyazbank', 'Letters of Credit', 2),
@@ -99,8 +99,8 @@ INSERT INTO job_type(job_type)
 VALUES
     ('part time'), ('full time'), ('project occupation'), ('remote job');
 
--- Table: vacancies
-INSERT INTO vacancies(posted_by_id, job_type_id, companies_id, is_company_name_hidden,
+-- Table: vacancy
+INSERT INTO vacancy(posted_by_id, job_type_id, company_id, is_company_name_hidden,
     job_description, job_location_id, min_salary, max_salary, publication_time, expiry_time)
         VALUES
             (11, 2, 1, false, 'Java programmer', 1, null, null, '2018-12-30', null),
@@ -109,8 +109,8 @@ INSERT INTO vacancies(posted_by_id, job_type_id, companies_id, is_company_name_h
             (13, 1, 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null),
             (23, 2, 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15');
 
--- Table: invitations
-INSERT INTO invitations(resumes_id, vacancies_id, meeting_time, message, communication_status_id)
+-- Table: invitation
+INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, communication_status_id)
     VALUES
         (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', 1),
         (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', 1),
@@ -118,8 +118,8 @@ INSERT INTO invitations(resumes_id, vacancies_id, meeting_time, message, communi
         (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', 3),
         (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', 2);
 
--- Table: responds
-INSERT INTO responds (resumes_id, vacancies_id, apply_date, message, communication_status_id)
+-- Table: respond
+INSERT INTO respond (resume_id, vacancy_id, apply_date, message, communication_status_id)
     VALUES
         (1, 1, '2019-01-05 09:00:00', 'I am interested in your position', 3),
         (2, 1, '2019-01-05 11:11:11', 'I am interested in your position', 3),
@@ -128,9 +128,9 @@ INSERT INTO responds (resumes_id, vacancies_id, apply_date, message, communicati
         (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', 3),
         (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', 3);
 
--- Table: resume_skills_set
+-- Table: resume_skill_set
 
-INSERT INTO resume_skills_set(resumes_id, skills_id, skill_level)
+INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
     VALUES
         (1, 1, 5),
         (1, 2, 3),
@@ -139,8 +139,8 @@ INSERT INTO resume_skills_set(resumes_id, skills_id, skill_level)
         (4, 1, 6); 
 
 
--- Table: vacancy_skills_set
-INSERT INTO vacancy_skills_set(vacancies_id, skills_id, skill_level)
+-- Table: vacancy_skill_set
+INSERT INTO vacancy_skill_set(vacancy_id, skill_id, skill_level)
     VALUES
         (1, 1, 5),
         (1, 2, 3),
