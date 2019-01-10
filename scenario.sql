@@ -1,21 +1,21 @@
 -- I want to find a job (sorry, no money left :( ) 
 -- I create a users account in database
-INSERT INTO users (type_of_user, login, password, email, is_active,
+INSERT INTO account (type_of_user, login, password, email, is_active,
     registration_date, last_login_date) 
         VALUES
             ('APPLICANT', 'ivanov_ivan', crypt('ivanov_password', gen_salt('bf')),
                 'ivanov_ivan@mail.ru', true, now(), now());
 
 -- Verify that account was createad
-SELECT users_id, login, email, registration_date, is_active FROM users WHERE login = 'ivanov_ivan';
+SELECT account_id, login, email, registration_date, is_active FROM account WHERE login = 'ivanov_ivan';
 
 -- I create a resume
-INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age)
-    SELECT users_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01' 
-       FROM users WHERE login = 'ivanov_ivan';
+INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date)
+    SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01' 
+       FROM account WHERE login = 'ivanov_ivan';
 
 -- Check whether resume is in database
-SELECT first_name, last_name, age 
+SELECT first_name, last_name, birth_date 
     FROM resume;
 
 -- Indicate my education
@@ -36,11 +36,11 @@ INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
        (6, 1, 10),
        (6, 2, 4);
 
--- I search vacancy that are suitable for me
+-- I search vacancies that are suitable for me
 SELECT vacancy.job_description, vacancy.current_job_type, vacancy.max_salary, company.company_name
-    FROM vacancy, company
-    WHERE lower(vacancy.job_description) LIKE '%letter of credit%' 
-        AND vacancy.company_id = company.company_id;
+    FROM vacancy
+    JOIN company USING(company_id)
+    WHERE lower(vacancy.job_description) LIKE '%letter of credit%';
 
 -- I want to get some more information about skill required 
 SELECT skill.skill_name, vskl.skill_level 
@@ -71,9 +71,11 @@ SELECT respond.current_communication_status
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I receive invitation for interview
-INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, current_communication_status)
+INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, current_communication_status, invitation_time)
     VALUES
-        (2, 6, now() + interval '12 hours', 'Hello, your resume is suitable for us, please confirm meeting', 'RECEIVED');
+        (2, 6, now() + interval '12 hours', 
+         'Hello, your resume is suitable for us, please confirm meeting', 
+         'RECEIVED', now());
 
 -- Check occurence of new invitation
 SELECT inv.resume_id, inv.vacancy_id, inv.current_communication_status

@@ -1,6 +1,6 @@
 CREATE EXTENSION pgcrypto;
 
-INSERT INTO users (type_of_user, login, password, email, is_active, 
+INSERT INTO account (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
 		SELECT 'APPLICANT', 'newseeker' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
@@ -9,7 +9,7 @@ INSERT INTO users (type_of_user, login, password, email, is_active,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(1, 10) as a(n);
 
-INSERT INTO users (type_of_user, login, password, email, is_active, 
+INSERT INTO account (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
 		SELECT 'RECRUITER', 'recruiter' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
@@ -18,7 +18,7 @@ INSERT INTO users (type_of_user, login, password, email, is_active,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(10, 20) as a(n);
 
-INSERT INTO users (type_of_user, login, password, email, is_active, 
+INSERT INTO account (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
 		SELECT 'HH_AGENCY', 'newagency' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
@@ -46,7 +46,7 @@ INSERT INTO job_location
 
 
 -- Table: resume
-INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age, current_status)
+INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date, current_status)
     VALUES
         (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', '1983-11-24', 'ACTIVE'),
         (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', '1983-11-24', 'ACTIVE'),
@@ -95,13 +95,13 @@ INSERT INTO vacancy(posted_by_id, current_job_type, company_id, is_company_name_
             (23, 'FULL_TIME', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15', 'ACTIVE');
 
 -- Table: invitation
-INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, current_communication_status)
+INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, current_communication_status, invitation_time)
     VALUES
-        (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', 'RECEIVED'),
-        (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', 'RECEIVED'),
-        (2, 3, '2019-01-12 10:00:00', 'We are waiting for you', 'WATCHED'),
-        (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', 'ACCEPTED'),
-        (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', 'WATCHED');
+        (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', 'RECEIVED', '2019-01-14 10:00:00'),
+        (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', 'RECEIVED', '2019-01-14 09:00:00'),
+        (2, 3, '2019-01-12 10:00:00', 'We are waiting for you', 'WATCHED', '2019-01-11 09:30:56'),
+        (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', 'ACCEPTED', '2018-12-31 23:59:59'),
+        (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', 'WATCHED', '2019-01-01 00:00:01');
 
 -- Table: respond
 INSERT INTO respond (resume_id, vacancy_id, apply_date, message, current_communication_status)
@@ -113,8 +113,18 @@ INSERT INTO respond (resume_id, vacancy_id, apply_date, message, current_communi
         (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', 'ACCEPTED'),
         (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', 'ACCEPTED');
 
--- Table: resume_skill_set
+-- Table: message
+-- Table: respond
+INSERT INTO message (resume_id, vacancy_id, message_time, message, current_communication_status)
+    VALUES
+        (1, 1, '2019-01-15 11:00:00', 'Hi, I''m sorry, but your position is not actual for me  ', 'RECEIVED'),
+        (1, 1, '2019-01-15 11:05:00', 'Ok, maybe next time :)', 'RECEIVED'),
+        (2, 1, '2019-01-05 15:11:11', 'Please provide the working schedule', 'RECEIVED'),
+        (2, 1, '2019-01-05 15:11:12', 'From 09.00 till 18.00', 'RECEIVED'),
+        (5, 5, '2019-01-10 12:00:00', 'I reconfirm our meeting', 'RECEIVED');
 
+
+-- Table: resume_skill_set
 INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
     VALUES
         (1, 1, 5),

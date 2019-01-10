@@ -19,9 +19,9 @@ CREATE TABLE job_location (
 
 CREATE TYPE USER_TYPE AS ENUM ('APPLICANT', 'RECRUITER', 'HH_AGENCY');
 
--- Table: users
-CREATE TABLE users (
-    users_id serial PRIMARY KEY, 
+-- Table: account
+CREATE TABLE account (
+    account_id serial PRIMARY KEY, 
     type_of_user USER_TYPE,
     login varchar(100)  NOT NULL UNIQUE,
     password varchar(100)  NOT NULL,
@@ -37,14 +37,14 @@ CREATE TYPE VACANCY_STATUS AS ENUM ('ACTIVE', 'HIDDEN', 'ARCHIEVE', 'DELETED');
 -- Table: resume
 CREATE TABLE resume (
     resume_id serial PRIMARY KEY, 
-    users_id integer REFERENCES users(users_id),
+    account_id integer REFERENCES account(account_id),
     first_name varchar(50)  NOT NULL,
     middle_name varchar(50),
     last_name varchar(50)  NOT NULL,
     min_salary integer,
     max_salary integer,
     currency varchar(50),
-    age date NOT NULL, 
+    birth_date date NOT NULL, 
     current_status RESUME_STATUS
 );
 
@@ -87,7 +87,7 @@ CREATE TYPE JOB_TYPE AS ENUM ('PART_TIME', 'FULL_TIME', 'PROJECT_OCCUPATION', 'R
 -- Table: vacancy
 CREATE TABLE vacancy (
     vacancy_id serial PRIMARY KEY,
-    posted_by_id integer REFERENCES users(users_id),
+    posted_by_id integer REFERENCES account(account_id),
     current_job_type JOB_TYPE,
     company_id integer  REFERENCES company(company_id),
     is_company_name_hidden boolean  NOT NULL,
@@ -105,6 +105,7 @@ CREATE TABLE invitation (
     resume_id integer REFERENCES resume(resume_id),
     vacancy_id integer REFERENCES vacancy(vacancy_id),
     meeting_time timestamp  NOT NULL,
+    invitation_time timestamp,
     message varchar(1000), 
     current_communication_status COMMUNICATION_STATUS ,
     PRIMARY KEY(resume_id, vacancy_id)
@@ -118,6 +119,16 @@ CREATE TABLE respond (
     message varchar(1000),
     current_communication_status COMMUNICATION_STATUS ,
     PRIMARY KEY(vacancy_id, resume_id)
+);
+
+-- Table: message 
+CREATE TABLE message (
+    vacancy_id integer REFERENCES vacancy(vacancy_id),
+    resume_id integer REFERENCES resume(resume_id),
+    message_time timestamp NOT NULL,
+    message varchar(1000),
+    current_communication_status COMMUNICATION_STATUS ,
+    PRIMARY KEY(vacancy_id, resume_id, message_time)
 );
 
 -- Table: resume_skill_set
