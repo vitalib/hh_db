@@ -2,7 +2,7 @@ CREATE EXTENSION pgcrypto;
 
 INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
-		SELECT 'seeker', 'newseeker' || a.n, 
+		SELECT 'APPLICANT', 'newseeker' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
 			a.n ||'seeker@mail.ru', true, 
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
@@ -11,7 +11,7 @@ INSERT INTO users (type_of_user, login, password, email, is_active,
 
 INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
-		SELECT 'recruiter', 'recruiter' || a.n, 
+		SELECT 'RECRUITER', 'recruiter' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
 			a.n ||'recruiter@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
@@ -20,12 +20,11 @@ INSERT INTO users (type_of_user, login, password, email, is_active,
 
 INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
-		SELECT 'hh_agency', 'newagency' || a.n, 
+		SELECT 'HH_AGENCY', 'newagency' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
 			a.n ||'agency@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
-            now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
-				FROM generate_series(20, 30) as a(n);
+            now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000) FROM generate_series(20, 30) as a(n);
 
 
 
@@ -49,11 +48,11 @@ INSERT INTO job_location
 -- Table: resume
 INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age, current_status)
     VALUES
-        (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', 35, 'Active'),
-        (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', 35, 'Active'),
-        (2, 'Egor', 'Konstantinovich', 'Shmelkov', 5000, 6000, 'RUB', 16, 'Active'),
-        (3, 'Ekaterina', 'Nikolaevna', 'Andreeva', 150000, 200000, 'RUB', 36, 'Active'),
-        (4, 'Nikolay', 'Vasil''evich', 'Ivanov', 30000, 45000, 'RUB', 61, 'Active');
+        (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', '1983-11-24', 'ACTIVE'),
+        (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', '1983-11-24', 'ACTIVE'),
+        (2, 'Egor', 'Konstantinovich', 'Shmelkov', 5000, 6000, 'RUB', '2002-05-12', 'ACTIVE'),
+        (3, 'Ekaterina', 'Nikolaevna', 'Andreeva', 150000, 200000, 'RUB', '1981-06-19', 'ACTIVE'),
+        (4, 'Nikolay', 'Vasil''evich', 'Ivanov', 30000, 45000, 'RUB', '1956-06-12', 'ACTIVE');
 
 
 -- Table: company
@@ -89,11 +88,11 @@ INSERT INTO experience_detail(resume_id, start_date, is_current_job, end_date, j
 INSERT INTO vacancy(posted_by_id, current_job_type, company_id, is_company_name_hidden,
     job_description, job_location_id, min_salary, max_salary, publication_time, expiry_time, current_status)
         VALUES
-            (11, 'full time', 1, false, 'Java programmer', 1, null, null, '2018-12-30', null, 'Active'),
-            (12, 'full time', 2, false, 'Letter of credit specialist', 2, null, 150000, '2018-11-25', null, 'Active'),
-            (11, 'full time', 1, false, 'Python programmer', 1, 80000, 90000, '2018-12-25', null, 'Active'),
-            (13, 'part time', 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null, 'Active'),
-            (23, 'full time', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15', 'Active');
+            (11, 'FULL_TIME', 1, false, 'Java programmer', 1, null, null, '2018-12-30', null, 'ACTIVE'),
+            (12, 'FULL_TIME', 2, false, 'Letter of credit specialist', 2, null, 150000, '2018-11-25', null, 'ACTIVE'),
+            (11, 'FULL_TIME', 1, false, 'Python programmer', 1, 80000, 90000, '2018-12-25', null, 'ACTIVE'),
+            (13, 'PART_TIME', 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null, 'ACTIVE'),
+            (23, 'FULL_TIME', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15', 'ACTIVE');
 
 -- Table: invitation
 INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, current_communication_status)

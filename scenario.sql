@@ -3,7 +3,7 @@
 INSERT INTO users (type_of_user, login, password, email, is_active,
     registration_date, last_login_date) 
         VALUES
-            ('seeker', 'ivanov_ivan', crypt('ivanov_password', gen_salt('bf')),
+            ('APPLICANT', 'ivanov_ivan', crypt('ivanov_password', gen_salt('bf')),
                 'ivanov_ivan@mail.ru', true, now(), now());
 
 -- Verify that account was createad
@@ -11,11 +11,12 @@ SELECT users_id, login, email, registration_date, is_active FROM users WHERE log
 
 -- I create a resume
 INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age)
-    SELECT users_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', 35
+    SELECT users_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01' 
        FROM users WHERE login = 'ivanov_ivan';
 
 -- Check whether resume is in database
-SELECT * FROM resume;
+SELECT first_name, last_name, age 
+    FROM resume;
 
 -- Indicate my education
 INSERT INTO education (resume_id, course_name, start_date, end_date, description)
@@ -36,15 +37,18 @@ INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
        (6, 2, 4);
 
 -- I search vacancy that are suitable for me
-SELECT * from vacancy, company
-    WHERE lower(job_description) LIKE '%letter of credit%' 
+SELECT vacancy.job_description, vacancy.current_job_type, vacancy.max_salary, company.company_name
+    FROM vacancy, company
+    WHERE lower(vacancy.job_description) LIKE '%letter of credit%' 
         AND vacancy.company_id = company.company_id;
 
 -- I want to get some more information about skill required 
-SELECT skill.skill_name, vskl.skill_level FROM vacancy_skill_set vskl
-    JOIN skill ON vskl.skill_id = skill.skill_id
-    JOIN vacancy vcns ON vskl.vacancy_id = vcns.vacancy_id
-        WHERE vcns.vacancy_id in (SELECT vacancy.vacancy_id FROM vacancy WHERE lower(job_description) LIKE '%letter of credit%');
+SELECT skill.skill_name, vskl.skill_level 
+    FROM vacancy_skill_set vskl
+    JOIN skill USING(skill_id)
+    JOIN vacancy vcns USING(vacancy_id)
+        WHERE vcns.vacancy_id in (SELECT vacancy.vacancy_id FROM vacancy 
+                                    WHERE lower(job_description) LIKE '%letter of credit%');
 
 -- Vacancy and skill are satisfactory and I make a response 
 INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
@@ -72,8 +76,9 @@ INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, current_com
         (2, 6, now() + interval '12 hours', 'Hello, your resume is suitable for us, please confirm meeting', 'RECEIVED');
 
 -- Check occurence of new invitation
-SELECT * FROM invitation
-    where invitation.meeting_time = (SELECT max(meeting_time) from invitation);
+SELECT inv.resume_id, inv.vacancy_id, inv.current_communication_status
+    FROM invitation inv
+    where inv.meeting_time = (SELECT max(meeting_time) from invitation);
 
 -- I have accepted invitation 
 UPDATE respond
@@ -83,7 +88,7 @@ UPDATE respond
 -- I was employed
 -- Vacancy status was set as archieved
 UPDATE vacancy
-    SET current_status = 'Archive'
+    SET current_status = 'ARCHIEVE'
         WHERE vacancy_id = 2;
 
 SELECT vacancy_id, current_status 
@@ -92,7 +97,7 @@ SELECT vacancy_id, current_status
 
 -- I have change status of my resume to 'Hidden'
 UPDATE resume
-    SET current_status = 'Hidden'
+    SET current_status = 'HIDDEN'
         WHERE resume_id = 6;
 
 SELECT resume_id, current_status 

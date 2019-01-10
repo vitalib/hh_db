@@ -17,12 +17,12 @@ CREATE TABLE job_location (
 );
 
 
-CREATE TYPE user_type AS ENUM ('seeker', 'recruiter', 'hh_agency');
+CREATE TYPE USER_TYPE AS ENUM ('APPLICANT', 'RECRUITER', 'HH_AGENCY');
 
 -- Table: users
 CREATE TABLE users (
     users_id serial PRIMARY KEY, 
-    type_of_user user_type,
+    type_of_user USER_TYPE,
     login varchar(100)  NOT NULL UNIQUE,
     password varchar(100)  NOT NULL,
     email varchar(255)  NOT NULL UNIQUE,
@@ -31,8 +31,8 @@ CREATE TABLE users (
     last_login_date timestamp  NOT NULL
 );
 
-CREATE TYPE status AS ENUM ('Active', 'Hidden', 'Archive', 'Deleted');
-
+CREATE TYPE RESUME_STATUS AS ENUM ('ACTIVE', 'HIDDEN', 'ARCHIEVE', 'DELETED');
+CREATE TYPE VACANCY_STATUS AS ENUM ('ACTIVE', 'HIDDEN', 'ARCHIEVE', 'DELETED');
 
 -- Table: resume
 CREATE TABLE resume (
@@ -44,11 +44,11 @@ CREATE TABLE resume (
     min_salary integer,
     max_salary integer,
     currency varchar(50),
-    age integer NOT NULL, 
-    current_status status
+    age date NOT NULL, 
+    current_status RESUME_STATUS
 );
 
-CREATE TYPE communication_status AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED');
+CREATE TYPE COMMUNICATION_STATUS AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED');
 
 -- Table: company
 CREATE TABLE company (
@@ -56,7 +56,7 @@ CREATE TABLE company (
     company_name varchar(100)  NOT NULL,
     activity_description varchar(1000) NOT NULL,
     creation_date date NOT NULL,
-    company_website_url varchar(500) NOT NULL
+    company_website_url varchar(500)
 );
 
 -- Table: education
@@ -82,18 +82,18 @@ CREATE TABLE experience_detail (
     PRIMARY KEY(resume_id, start_date, job_title)
 );
 
-CREATE TYPE job_type AS ENUM ('part time', 'full time', 'project occupation', 'remote job');
+CREATE TYPE JOB_TYPE AS ENUM ('PART_TIME', 'FULL_TIME', 'PROJECT_OCCUPATION', 'REMOTE_JOB');
 
 -- Table: vacancy
 CREATE TABLE vacancy (
     vacancy_id serial PRIMARY KEY,
     posted_by_id integer REFERENCES users(users_id),
-    current_job_type job_type,
+    current_job_type JOB_TYPE,
     company_id integer  REFERENCES company(company_id),
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
     job_location_id integer REFERENCES job_location(job_location_id),
-    current_status status,
+    current_status VACANCY_STATUS,
     min_salary integer,
     max_salary integer,
     publication_time timestamp  NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE invitation (
     vacancy_id integer REFERENCES vacancy(vacancy_id),
     meeting_time timestamp  NOT NULL,
     message varchar(1000), 
-    current_communication_status communication_status ,
+    current_communication_status COMMUNICATION_STATUS ,
     PRIMARY KEY(resume_id, vacancy_id)
 );
 
@@ -116,7 +116,7 @@ CREATE TABLE respond (
     resume_id integer REFERENCES resume(resume_id),
     apply_date timestamp NOT NULL,
     message varchar(1000),
-    current_communication_status communication_status ,
+    current_communication_status COMMUNICATION_STATUS ,
     PRIMARY KEY(vacancy_id, resume_id)
 );
 
