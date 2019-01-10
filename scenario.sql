@@ -7,11 +7,11 @@ INSERT INTO users (user_type_id, login, password, email, is_active,
                 'ivanov_ivan@mail.ru', true, now(), now());
 
 -- Verify that account was createad
-SELECT id, login, email, registration_date, is_active FROM users WHERE login = 'ivanov_ivan';
+SELECT users_id, login, email, registration_date, is_active FROM users WHERE login = 'ivanov_ivan';
 
 -- I create a resume
 INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age)
-    SELECT id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', 35
+    SELECT users_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', 35
        FROM users WHERE login = 'ivanov_ivan';
 
 -- Check whether resume is in database
@@ -38,13 +38,13 @@ INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
 -- I search vacancy that are suitable for me
 SELECT * from vacancy, company
     WHERE lower(job_description) LIKE '%letter of credit%' 
-        AND vacancy.company_id = company.id;
+        AND vacancy.company_id = company.company_id;
 
 -- I want to get some more information about skill required 
 SELECT skill.skill_name, vskl.skill_level FROM vacancy_skill_set vskl
-    JOIN skill ON vskl.skill_id = skill.id
-    JOIN vacancy vcns ON vskl.vacancy_id = vcns.id
-        WHERE vcns.id in (SELECT vacancy.id FROM vacancy WHERE lower(job_description) LIKE '%letter of credit%');
+    JOIN skill ON vskl.skill_id = skill.skill_id
+    JOIN vacancy vcns ON vskl.vacancy_id = vcns.vacancy_id
+        WHERE vcns.vacancy_id in (SELECT vacancy.vacancy_id FROM vacancy WHERE lower(job_description) LIKE '%letter of credit%');
 
 -- Vacancy and skill are satisfactory and I make a response 
 INSERT INTO respond(vacancy_id, resume_id, apply_date, message, communication_status_id)
@@ -55,7 +55,7 @@ INSERT INTO respond(vacancy_id, resume_id, apply_date, message, communication_st
 SELECT respond.*, communication_status.status_name 
         FROM respond
         JOIN communication_status
-        ON respond.communication_status_id = communication_status.id
+        ON respond.communication_status_id = communication_status.communication_status_id
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- Employer read respond 
@@ -67,7 +67,7 @@ UPDATE respond
 SELECT respond.*, communication_status.status_name 
         FROM respond
         JOIN communication_status
-        ON respond.communication_status_id = communication_status.id
+        ON respond.communication_status_id = communication_status.communication_status_id
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I receive invitation for interview
@@ -88,17 +88,17 @@ UPDATE respond
 -- Vacancy status was set as archieved
 UPDATE vacancy
     SET status_id = 3
-        WHERE id = 2;
+        WHERE vacancy_id = 2;
 
-SELECT s.name, v.id
+SELECT s.name, v.vacancy_id
     FROM status s, vacancy v
-    WHERE v.id = 2 AND v.status_id = s.id;
+    WHERE v.vacancy_id = 2 AND v.status_id = s.status_id;
 
 -- I have change status of my resume to 'Hidden'
 UPDATE resume
     SET status_id = 2
-        WHERE id = 6;
+        WHERE resume_id = 6;
 
-SELECT id, status_id
+SELECT resume_id, status_id
     FROM resume
-        WHERE id = 6;
+        WHERE resume_id = 6;
