@@ -1,30 +1,32 @@
 CREATE EXTENSION pgcrypto;
 
 -- Insert types of users
+/*
 INSERT INTO user_type (user_type_name)
 	VALUES ('seeker'), ('recruiter'), ('hh_agency');
+*/
 
-INSERT INTO users (user_type_id, login, password, email, is_active, 
+INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
-		SELECT 1, 'newseeker' || a.n, 
+		SELECT 'seeker', 'newseeker' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
 			a.n ||'seeker@mail.ru', true, 
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(1, 10) as a(n);
 
-INSERT INTO users (user_type_id, login, password, email, is_active, 
+INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
-		SELECT 2, 'recruiter' || a.n, 
+		SELECT 'recruiter', 'recruiter' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
 			a.n ||'recruiter@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(10, 20) as a(n);
 
-INSERT INTO users (user_type_id, login, password, email, is_active, 
+INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
-		SELECT 3, 'newagency' || a.n, 
+		SELECT 'hh_agency', 'newagency' || a.n, 
     		crypt('password'|| a.n, gen_salt('bf')), 
 			a.n ||'agency@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
@@ -62,9 +64,6 @@ INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max
         (3, 'Ekaterina', 'Nikolaevna', 'Andreeva', 150000, 200000, 'RUB', 36),
         (4, 'Nikolay', 'Vasil''evich', 'Ivanov', 30000, 45000, 'RUB', 61);
 
-INSERT INTO communication_status(status_name)
-    VALUES ('RECEIVED'), ('WATCHED'), ('ACCEPTED'), ('DECLINED');
-
 
 -- Table: company
 INSERT INTO company(company_name, activity_description, creation_date, company_website_url)
@@ -94,39 +93,35 @@ INSERT INTO experience_detail(resume_id, start_date, is_current_job, end_date, j
     (4, '2017-10-16', true, null,  'Managing Expert', 'JSC Promsvyazbank', 'Letters of Credit', 2);
 
 
--- Table: job_type
-INSERT INTO job_type(job_type)
-VALUES
-    ('part time'), ('full time'), ('project occupation'), ('remote job');
 
 -- Table: vacancy
-INSERT INTO vacancy(posted_by_id, job_type_id, company_id, is_company_name_hidden,
+INSERT INTO vacancy(posted_by_id, current_job_type, company_id, is_company_name_hidden,
     job_description, job_location_id, min_salary, max_salary, publication_time, expiry_time)
         VALUES
-            (11, 2, 1, false, 'Java programmer', 1, null, null, '2018-12-30', null),
-            (12, 2, 2, false, 'Letter of credit specialist', 2, null, 150000, '2018-11-25', null),
-            (11, 2, 1, false, 'Python programmer', 1, 80000, 90000, '2018-12-25', null),
-            (13, 1, 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null),
-            (23, 2, 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15');
+            (11, 'full time', 1, false, 'Java programmer', 1, null, null, '2018-12-30', null),
+            (12, 'full time', 2, false, 'Letter of credit specialist', 2, null, 150000, '2018-11-25', null),
+            (11, 'full time', 1, false, 'Python programmer', 1, 80000, 90000, '2018-12-25', null),
+            (13, 'part time', 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null),
+            (23, 'full time', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15');
 
 -- Table: invitation
-INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, communication_status_id)
+INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, current_communication_status)
     VALUES
-        (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', 1),
-        (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', 1),
-        (2, 3, '2019-01-12 10:00:00', 'We are waiting for you', 2),
-        (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', 3),
-        (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', 2);
+        (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', 'RECEIVED'),
+        (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', 'RECEIVED'),
+        (2, 3, '2019-01-12 10:00:00', 'We are waiting for you', 'WATCHED'),
+        (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', 'ACCEPTED'),
+        (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', 'WATCHED');
 
 -- Table: respond
-INSERT INTO respond (resume_id, vacancy_id, apply_date, message, communication_status_id)
+INSERT INTO respond (resume_id, vacancy_id, apply_date, message, current_communication_status)
     VALUES
-        (1, 1, '2019-01-05 09:00:00', 'I am interested in your position', 3),
-        (2, 1, '2019-01-05 11:11:11', 'I am interested in your position', 3),
-        (2, 3, '2019-01-02 10:00:00', 'I am interested in your position', 3),
-        (1, 4, '2019-12-30 09:00:00', 'Please invite I will do my best', 4),
-        (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', 3),
-        (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', 3);
+        (1, 1, '2019-01-05 09:00:00', 'I am interested in your position', 'ACCEPTED'),
+        (2, 1, '2019-01-05 11:11:11', 'I am interested in your position', 'ACCEPTED'),
+        (2, 3, '2019-01-02 10:00:00', 'I am interested in your position', 'ACCEPTED'),
+        (1, 4, '2019-12-30 09:00:00', 'Please invite I will do my best', 'DECLINED'),
+        (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', 'ACCEPTED'),
+        (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', 'ACCEPTED');
 
 -- Table: resume_skill_set
 

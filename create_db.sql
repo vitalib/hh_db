@@ -16,16 +16,13 @@ CREATE TABLE job_location (
     zip varchar(50)  NOT NULL
 );
 
--- Table: user_type
-CREATE TABLE user_type (
-    user_type_id serial PRIMARY KEY,
-    user_type_name varchar(20) NOT NULL 
-);
+
+CREATE TYPE user_type AS ENUM ('seeker', 'recruiter', 'hh_agency');
 
 -- Table: users
 CREATE TABLE users (
     users_id serial PRIMARY KEY, 
-    user_type_id integer REFERENCES user_type(user_type_id), 
+    type_of_user user_type,
     login varchar(100)  NOT NULL UNIQUE,
     password varchar(100)  NOT NULL,
     email varchar(255)  NOT NULL UNIQUE,
@@ -53,10 +50,7 @@ CREATE TABLE resume (
     status_id integer REFERENCES status(status_id) DEFAULT 1
 );
 
-CREATE TABLE communication_status (
-    communication_status_id serial PRIMARY KEY,
-    status_name varchar(50)  NOT NULL
-);
+CREATE TYPE communication_status AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED');
 
 -- Table: company
 CREATE TABLE company (
@@ -90,17 +84,13 @@ CREATE TABLE experience_detail (
     PRIMARY KEY(resume_id, start_date, job_title)
 );
 
--- Table: job_type
-CREATE TABLE job_type (
-    job_type_id serial PRIMARY KEY,
-    job_type varchar(20)  NOT NULL
-);
+CREATE TYPE job_type AS ENUM ('part time', 'full time', 'project occupation', 'remote job');
 
 -- Table: vacancy
 CREATE TABLE vacancy (
     vacancy_id serial PRIMARY KEY,
     posted_by_id integer REFERENCES users(users_id),
-    job_type_id integer REFERENCES job_type(job_type_id),
+    current_job_type job_type,
     company_id integer  REFERENCES company(company_id),
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
@@ -118,7 +108,7 @@ CREATE TABLE invitation (
     vacancy_id integer REFERENCES vacancy(vacancy_id),
     meeting_time timestamp  NOT NULL,
     message varchar(1000), 
-    communication_status_id integer NOT NULL,
+    current_communication_status communication_status ,
     PRIMARY KEY(resume_id, vacancy_id)
 );
 
@@ -128,7 +118,7 @@ CREATE TABLE respond (
     resume_id integer REFERENCES resume(resume_id),
     apply_date timestamp NOT NULL,
     message varchar(1000) NULL,
-    communication_status_id integer NOT NULL,
+    current_communication_status communication_status ,
     PRIMARY KEY(vacancy_id, resume_id)
 );
 

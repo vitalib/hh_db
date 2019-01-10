@@ -1,9 +1,9 @@
 -- I want to find a job (sorry, no money left :( ) 
 -- I create a users account in database
-INSERT INTO users (user_type_id, login, password, email, is_active,
+INSERT INTO users (type_of_user, login, password, email, is_active,
     registration_date, last_login_date) 
         VALUES
-            (1, 'ivanov_ivan', crypt('ivanov_password', gen_salt('bf')),
+            ('seeker', 'ivanov_ivan', crypt('ivanov_password', gen_salt('bf')),
                 'ivanov_ivan@mail.ru', true, now(), now());
 
 -- Verify that account was createad
@@ -47,33 +47,29 @@ SELECT skill.skill_name, vskl.skill_level FROM vacancy_skill_set vskl
         WHERE vcns.vacancy_id in (SELECT vacancy.vacancy_id FROM vacancy WHERE lower(job_description) LIKE '%letter of credit%');
 
 -- Vacancy and skill are satisfactory and I make a response 
-INSERT INTO respond(vacancy_id, resume_id, apply_date, message, communication_status_id)
+INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
     VALUES
-        (2, 6, now(), 'Hello, my name is Ivan. Please consider my resume', 1);
+        (2, 6, now(), 'Hello, my name is Ivan. Please consider my resume', 'RECEIVED');
 
 -- Check whether it appears in respond table
-SELECT respond.*, communication_status.status_name 
+SELECT respond.current_communication_status 
         FROM respond
-        JOIN communication_status
-        ON respond.communication_status_id = communication_status.communication_status_id
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- Employer read respond 
 UPDATE respond
-    SET communication_status_id = 3
+    SET current_communication_status = 'ACCEPTED' 
     WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- Check whether status of respond has changed
-SELECT respond.*, communication_status.status_name 
+SELECT respond.current_communication_status
         FROM respond
-        JOIN communication_status
-        ON respond.communication_status_id = communication_status.communication_status_id
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I receive invitation for interview
-INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, communication_status_id)
+INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, current_communication_status)
     VALUES
-        (2, 6, now() + interval '12 hours', 'Hello, your resume is suitable for us, please confirm meeting', 1);
+        (2, 6, now() + interval '12 hours', 'Hello, your resume is suitable for us, please confirm meeting', 'RECEIVED');
 
 -- Check occurence of new invitation
 SELECT * FROM invitation
@@ -81,7 +77,7 @@ SELECT * FROM invitation
 
 -- I have accepted invitation 
 UPDATE respond
-    SET communication_status_id = 3
+    SET current_communication_status = 'ACCEPTED'
     WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I was employed
