@@ -1,11 +1,5 @@
 CREATE EXTENSION pgcrypto;
 
--- Insert types of users
-/*
-INSERT INTO user_type (user_type_name)
-	VALUES ('seeker'), ('recruiter'), ('hh_agency');
-*/
-
 INSERT INTO users (type_of_user, login, password, email, is_active, 
 	registration_date, last_login_date) 
 		SELECT 'seeker', 'newseeker' || a.n, 
@@ -51,18 +45,15 @@ INSERT INTO job_location
         ('Smirnovskaya, 15', 'Moscow', 'Moscow', 'Russia', '125363'),
         ('Podemnaya, 15', 'Moscow', 'Moscow', 'Russia', '111111');
 
--- Table status
-INSERT INTO status(name)
-    VALUES ('Active'), ('Hidden'), ('Archive'), ('Deleted');
 
 -- Table: resume
-INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age)
+INSERT INTO resume(users_id, first_name, middle_name, last_name, min_salary, max_salary, currency, age, current_status)
     VALUES
-        (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', 35),
-        (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', 35),
-        (2, 'Egor', 'Konstantinovich', 'Shmelkov', 5000, 6000, 'RUB', 16),
-        (3, 'Ekaterina', 'Nikolaevna', 'Andreeva', 150000, 200000, 'RUB', 36),
-        (4, 'Nikolay', 'Vasil''evich', 'Ivanov', 30000, 45000, 'RUB', 61);
+        (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', 35, 'Active'),
+        (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', 35, 'Active'),
+        (2, 'Egor', 'Konstantinovich', 'Shmelkov', 5000, 6000, 'RUB', 16, 'Active'),
+        (3, 'Ekaterina', 'Nikolaevna', 'Andreeva', 150000, 200000, 'RUB', 36, 'Active'),
+        (4, 'Nikolay', 'Vasil''evich', 'Ivanov', 30000, 45000, 'RUB', 61, 'Active');
 
 
 -- Table: company
@@ -96,13 +87,13 @@ INSERT INTO experience_detail(resume_id, start_date, is_current_job, end_date, j
 
 -- Table: vacancy
 INSERT INTO vacancy(posted_by_id, current_job_type, company_id, is_company_name_hidden,
-    job_description, job_location_id, min_salary, max_salary, publication_time, expiry_time)
+    job_description, job_location_id, min_salary, max_salary, publication_time, expiry_time, current_status)
         VALUES
-            (11, 'full time', 1, false, 'Java programmer', 1, null, null, '2018-12-30', null),
-            (12, 'full time', 2, false, 'Letter of credit specialist', 2, null, 150000, '2018-11-25', null),
-            (11, 'full time', 1, false, 'Python programmer', 1, 80000, 90000, '2018-12-25', null),
-            (13, 'part time', 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null),
-            (23, 'full time', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15');
+            (11, 'full time', 1, false, 'Java programmer', 1, null, null, '2018-12-30', null, 'Active'),
+            (12, 'full time', 2, false, 'Letter of credit specialist', 2, null, 150000, '2018-11-25', null, 'Active'),
+            (11, 'full time', 1, false, 'Python programmer', 1, 80000, 90000, '2018-12-25', null, 'Active'),
+            (13, 'part time', 3, false, 'Architercture', 3, 180000, 190000, '2018-12-30', null, 'Active'),
+            (23, 'full time', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15', 'Active');
 
 -- Table: invitation
 INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, current_communication_status)

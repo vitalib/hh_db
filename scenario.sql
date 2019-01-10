@@ -83,18 +83,18 @@ UPDATE respond
 -- I was employed
 -- Vacancy status was set as archieved
 UPDATE vacancy
-    SET status_id = 3
+    SET current_status = 'Archive'
         WHERE vacancy_id = 2;
 
-SELECT s.name, v.vacancy_id
-    FROM status s, vacancy v
-    WHERE v.vacancy_id = 2 AND v.status_id = s.status_id;
+SELECT vacancy_id, current_status 
+    FROM vacancy 
+    WHERE vacancy_id = 2;
 
 -- I have change status of my resume to 'Hidden'
 UPDATE resume
-    SET status_id = 2
+    SET current_status = 'Hidden'
         WHERE resume_id = 6;
 
-SELECT resume_id, status_id
+SELECT resume_id, current_status 
     FROM resume
         WHERE resume_id = 6;

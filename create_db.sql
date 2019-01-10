@@ -31,11 +31,9 @@ CREATE TABLE users (
     last_login_date timestamp  NOT NULL
 );
 
--- Table status
-CREATE TABLE status(
-    status_id serial PRIMARY KEY,
-    name varchar(50) NOT NULL
-);
+CREATE TYPE status AS ENUM ('Active', 'Hidden', 'Archive', 'Deleted');
+
+
 -- Table: resume
 CREATE TABLE resume (
     resume_id serial PRIMARY KEY, 
@@ -47,7 +45,7 @@ CREATE TABLE resume (
     max_salary integer,
     currency varchar(50),
     age integer NOT NULL, 
-    status_id integer REFERENCES status(status_id) DEFAULT 1
+    current_status status
 );
 
 CREATE TYPE communication_status AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED');
@@ -95,7 +93,7 @@ CREATE TABLE vacancy (
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
     job_location_id integer REFERENCES job_location(job_location_id),
-    status_id integer REFERENCES status(status_id) DEFAULT 1,
+    current_status status,
     min_salary integer,
     max_salary integer,
     publication_time timestamp  NOT NULL,
@@ -117,7 +115,7 @@ CREATE TABLE respond (
     vacancy_id integer REFERENCES vacancy(vacancy_id),
     resume_id integer REFERENCES resume(resume_id),
     apply_date timestamp NOT NULL,
-    message varchar(1000) NULL,
+    message varchar(1000),
     current_communication_status communication_status ,
     PRIMARY KEY(vacancy_id, resume_id)
 );
