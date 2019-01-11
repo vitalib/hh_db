@@ -48,7 +48,7 @@ INSERT INTO job_location
 -- Table: resume
 INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date, current_status)
     VALUES
-        (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 60000, 'RUB', '1983-11-24', 'ACTIVE'),
+        (1, 'Vitali', 'Grigor''evich', 'Baranov', 40000, 50000, 'RUB', '1983-11-24', 'ACTIVE'),
         (1, 'Vitali', 'Grigor''evich', 'Baranov', 130000, 220000, 'RUB', '1983-11-24', 'ACTIVE'),
         (2, 'Egor', 'Konstantinovich', 'Shmelkov', 5000, 6000, 'RUB', '2002-05-12', 'ACTIVE'),
         (3, 'Ekaterina', 'Nikolaevna', 'Andreeva', 150000, 200000, 'RUB', '1981-06-19', 'ACTIVE'),

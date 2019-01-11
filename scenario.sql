@@ -10,13 +10,14 @@ INSERT INTO account (type_of_user, login, password, email, is_active,
 SELECT account_id, login, email, registration_date, is_active FROM account WHERE login = 'ivanov_ivan';
 
 -- I create a resume
-INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date)
-    SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01' 
+INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date, current_status)
+    SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01', 'ACTIVE' 
        FROM account WHERE login = 'ivanov_ivan';
 
--- Check whether resume is in database
-SELECT first_name, last_name, birth_date 
-    FROM resume;
+-- Check whether my new resume is in database
+SELECT first_name, last_name, birth_date, max_salary, current_status
+    FROM resume
+    WHERE account_id in (SELECT account_id FROM account WHERE login = 'ivanov_ivan');
 
 -- Indicate my education
 INSERT INTO education (resume_id, course_name, start_date, end_date, description)
@@ -40,7 +41,8 @@ INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
 SELECT vacancy.job_description, vacancy.current_job_type, vacancy.max_salary, company.company_name
     FROM vacancy
     JOIN company USING(company_id)
-    WHERE lower(vacancy.job_description) LIKE '%letter of credit%';
+    WHERE vacancy.current_status = 'ACTIVE' 
+        AND lower(vacancy.job_description) LIKE '%letter of credit%';
 
 -- I want to get some more information about skill required 
 SELECT skill.skill_name, vskl.skill_level 
@@ -49,6 +51,7 @@ SELECT skill.skill_name, vskl.skill_level
     JOIN vacancy vcns USING(vacancy_id)
         WHERE vcns.vacancy_id in (SELECT vacancy.vacancy_id FROM vacancy 
                                     WHERE lower(job_description) LIKE '%letter of credit%');
+
 
 -- Vacancy and skill are satisfactory and I make a response 
 INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
@@ -105,3 +108,71 @@ UPDATE resume
 SELECT resume_id, current_status 
     FROM resume
         WHERE resume_id = 6;
+
+
+-- I want to change this job and start a new search
+-- This time I will search on skills and salary
+SELECT vacancy.vacancy_id, company.company_name, vss.skill_id
+    FROM vacancy
+    JOIN company USING (company_id)
+    JOIN vacancy_skill_set vss USING(vacancy_id)
+    WHERE vss.skill_id IN (SELECT skill_id 
+                            FROM resume_skill_set
+                                WHERE resume_id = 6)
+        AND 
+            vacancy.max_salary >= 60000
+        AND vacancy.min_salary >= 40000
+        AND
+            vacancy.current_status = 'ACTIVE'; 
+
+-- I change status of my resume
+UPDATE resume
+    SET current_status = 'ACTIVE'
+        WHERE resume_id = 6;
+
+-- And send respond to the found vacancy
+INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
+    VALUES
+        (4, 6, now(), 'Hello, my name is Ivan. Please consider my resume', 'RECEIVED');
+
+-- Employer has read my respond
+UPDATE respond
+    SET current_communication_status = 'WATCHED'
+        WHERE vacancy_id = 4 AND resume_id = 6;
+
+-- It has sent me a message with additional question about my current occupation
+INSERT INTO message (vacancy_id, resume_id, message_time, message, current_communication_status)
+    VALUES
+        (4, 6, '2019-01-11 09:00:00', 'Please explain your current occupation', 'RECEIVED');
+
+-- I have read this message
+UPDATE message
+    SET current_communication_status = 'WATCHED'
+        WHERE vacancy_id = 4 AND resume_id = 6 AND message_time = '2019-01-11 09:00:00';
+
+-- And send my reply that was unsatisfactory for employer and it has declined my respond
+UPDATE respond
+    SET current_communication_status = 'DECLINED'
+        WHERE vacancy_id = 4 AND resume_id = 6;
+
+-- Parly it was so because these employer has already find a better candidate for less money
+SELECT resume.resume_id
+    FROM resume
+    JOIN resume_skill_set rss USING(resume_id)
+    WHERE rss.skill_id IN (SELECT skill_id
+                               FROM vacancy_skill_set
+                                    WHERE vacancy_id = 4)
+        AND
+            resume.current_status = 'ACTIVE'
+        AND
+            resume.max_salary < 60000;
+
+-- After hiring of this candiate emloyer has changed the status of this vacancy
+UPDATE vacancy
+    SET current_status = 'HIDDEN'
+        WHERE vacancy_id = 4;
+
+-- Hired employee delete has resume  
+UPDATE resume
+    SET current_status = 'DELETED'
+        WHERE resume_id = 1;

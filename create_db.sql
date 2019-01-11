@@ -45,7 +45,7 @@ CREATE TABLE resume (
     max_salary integer,
     currency varchar(50),
     birth_date date NOT NULL, 
-    current_status RESUME_STATUS
+    current_status RESUME_STATUS NOT NULL
 );
 
 CREATE TYPE COMMUNICATION_STATUS AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED');
