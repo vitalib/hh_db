@@ -10,12 +10,12 @@ INSERT INTO account (type_of_user, login, password, email, is_active,
 SELECT account_id, login, email, registration_date, is_active FROM account WHERE login = 'ivanov_ivan';
 
 -- I create a resume
-INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date, current_status)
-    SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01', 'ACTIVE' 
+INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date, is_active)
+    SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01', true 
        FROM account WHERE login = 'ivanov_ivan';
 
 -- Check whether my new resume is in database
-SELECT first_name, last_name, birth_date, max_salary, current_status
+SELECT first_name, last_name, birth_date, max_salary, is_active
     FROM resume
     WHERE account_id=33; 
 
@@ -41,7 +41,7 @@ INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
 SELECT vacancy_id, vacancy.job_description, vacancy.current_job_type, vacancy.max_salary, company.company_name
     FROM vacancy
     JOIN company USING(company_id)
-    WHERE vacancy.current_status = 'ACTIVE' 
+    WHERE vacancy.is_active = true 
         AND lower(vacancy.job_description) LIKE '%letter of credit%';
 
 -- I want to get some more information about skill required 
@@ -90,21 +90,21 @@ UPDATE respond
     WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I was employed
--- Vacancy status was set as archieved
+-- Vacancy status was set as unactive
 UPDATE vacancy
-    SET current_status = 'ARCHIVE'
+    SET is_active = false 
         WHERE vacancy_id = 2;
 
-SELECT vacancy_id, current_status 
+SELECT vacancy_id, is_active 
     FROM vacancy 
     WHERE vacancy_id = 2;
 
--- I have change status of my resume to 'Hidden'
+-- I have change status of my resume to unactive
 UPDATE resume
-    SET current_status = 'HIDDEN'
+    SET is_active = false 
         WHERE resume_id = 6;
 
-SELECT resume_id, current_status 
+SELECT resume_id, is_active 
     FROM resume
         WHERE resume_id = 6;
 
@@ -117,16 +117,14 @@ SELECT vacancy.vacancy_id, company.company_name, vss.skill_id
     JOIN vacancy_skill_set vss USING(vacancy_id)
     JOIN resume_skill_set rss USING (skill_id)
         WHERE rss.resume_id = 6
-        AND 
-            vacancy.max_salary >= 60000
+        AND vacancy.max_salary >= 60000
         AND vacancy.min_salary >= 40000
-        AND
-            vacancy.current_status = 'ACTIVE'; 
+        AND vacancy.is_active = true; 
 
--- I make my hidden and archived resumes active 
+-- I make my resume active 
 UPDATE resume
-    SET current_status = 'ACTIVE'
-        WHERE resume_id = 6 AND resume.current_status in ('HIDDEN', 'ARCHIVE');
+    SET is_active = true 
+        WHERE resume_id = 6;
 
 -- And send respond to the found vacancy
 INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
@@ -154,39 +152,27 @@ UPDATE respond
         WHERE vacancy_id = 4 AND resume_id = 6;
 
 
--- Parly it was so because these employer has already find a better candidate
--- for less money. Employer has obtain from provider service that allows to
--- watch hidden and archieved resumes and also can search in them
+-- Partly it was so because these employer has already find a better candidate
+-- for less money. 
 SELECT resume.resume_id
     FROM resume
     JOIN resume_skill_set rss USING(resume_id)
     JOIN vacancy_skill_set vss USING(skill_id)
         WHERE vacancy_id = 4
         AND
-            resume.current_status in ('ACTIVE', 'HIDDEN', 'ARCHIVE')
+            resume.is_active=true
         AND
             resume.max_salary < 60000;
 
 -- After hiring of this candiate emloyer has changed the status of this vacancy
+-- to unactive
 UPDATE vacancy
-    SET current_status = 'HIDDEN'
+    SET is_active = false 
         WHERE vacancy_id = 4;
 
--- And all hidden vacancies of company were moved to 'ARCHIVE' status
-UPDATE vacancy
-    SET current_status = 'ARCHIVE'
-        WHERE company_id = 3 and current_status = 'HIDDEN';
-
--- Serice provider raise fee for storing of vacancies 
--- and company decides to delete all archive vacancies
-UPDATE vacancy
-    SET current_status = 'DELETED'
-        WHERE company_id = 3 AND current_status = 'ARCHIVE';
-
-
--- Hired employee delete has resume  
+-- Hired employee makes his resume unactive
 UPDATE resume
-    SET current_status = 'DELETED'
+    SET is_active = false 
         WHERE resume_id = 1;
 
 -- Hired employee withdraw all other response with 'RECEIVED' status
@@ -196,10 +182,7 @@ UPDATE respond
 
 -- For hired position employer moves responds and invitations with statuses
 -- 'RECEIVED', 'WATCHED', 'ACCEPTED' to 'ARCHIVE' status
-
 UPDATE respond
     SET current_communication_status = 'ARCHIVE'
         WHERE current_communication_status in ('RECEIVED', 'WATCHED', 'ACCEPTED') 
             AND vacancy_id = 4;
-
-

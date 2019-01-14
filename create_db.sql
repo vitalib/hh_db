@@ -31,9 +31,6 @@ CREATE TABLE account (
     last_login_date timestamp  NOT NULL
 );
 
-CREATE TYPE RESUME_STATUS AS ENUM ('ACTIVE', 'HIDDEN', 'ARCHIVE', 'DELETED');
-CREATE TYPE VACANCY_STATUS AS ENUM ('ACTIVE', 'HIDDEN', 'ARCHIVE', 'DELETED');
-
 -- Table: resume
 CREATE TABLE resume (
     resume_id serial PRIMARY KEY, 
@@ -45,7 +42,7 @@ CREATE TABLE resume (
     max_salary integer,
     currency varchar(50),
     birth_date date NOT NULL, 
-    current_status RESUME_STATUS NOT NULL
+    is_active boolean NOT NULL
 );
 
 CREATE TYPE COMMUNICATION_STATUS AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED', 'WITHDRAWN', 'ARCHIVE');
@@ -93,7 +90,7 @@ CREATE TABLE vacancy (
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
     job_location_id integer REFERENCES job_location(job_location_id),
-    current_status VACANCY_STATUS,
+    is_active boolean NOT NULL,
     min_salary integer,
     max_salary integer,
     publication_time timestamp  NOT NULL,
