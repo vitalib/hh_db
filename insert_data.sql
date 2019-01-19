@@ -95,33 +95,33 @@ INSERT INTO vacancy(posted_by_id, current_job_type, company_id, is_company_name_
             (23, 'FULL_TIME', 4, true, 'Currency control', 4, 100000, 110000, '2018-11-30', '2019-01-15', true);
 
 -- Table: invitation
-INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, current_communication_status, invitation_time)
+INSERT INTO invitation(resume_id, vacancy_id, meeting_time, message, is_watched, invitation_time)
     VALUES
-        (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', 'RECEIVED', '2019-01-14 10:00:00'),
-        (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', 'RECEIVED', '2019-01-14 09:00:00'),
-        (2, 3, '2019-01-12 10:00:00', 'We are waiting for you', 'WATCHED', '2019-01-11 09:30:56'),
-        (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', 'ACCEPTED', '2018-12-31 23:59:59'),
-        (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', 'WATCHED', '2019-01-01 00:00:01');
+        (1, 1, '2019-01-15 10:00:00', 'We are waiting for you', false, '2019-01-14 10:00:00'),
+        (2, 1, '2019-01-15 11:00:00', 'We are waiting for you', false, '2019-01-14 09:00:00'),
+        (2, 3, '2019-01-12 10:00:00', 'We are waiting for you', true, '2019-01-11 09:30:56'),
+        (3, 4, '2019-01-09 09:00:00', 'We are waiting for you', true, '2018-12-31 23:59:59'),
+        (5, 5, '2019-01-13 12:00:00', 'We are waiting for you', true, '2019-01-01 00:00:01');
 
 -- Table: respond
-INSERT INTO respond (resume_id, vacancy_id, apply_date, message, current_communication_status)
+INSERT INTO respond (resume_id, vacancy_id, apply_date, message, is_watched)
     VALUES
-        (1, 1, '2019-01-05 09:00:00', 'I am interested in your position', 'ACCEPTED'),
-        (2, 1, '2019-01-05 11:11:11', 'I am interested in your position', 'ACCEPTED'),
-        (2, 3, '2019-01-02 10:00:00', 'I am interested in your position', 'ACCEPTED'),
-        (1, 4, '2019-12-30 09:00:00', 'Please invite I will do my best', 'DECLINED'),
-        (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', 'ACCEPTED'),
-        (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', 'ACCEPTED');
+        (1, 1, '2019-01-05 09:00:00', 'I am interested in your position', true),
+        (2, 1, '2019-01-05 11:11:11', 'I am interested in your position', true),
+        (2, 3, '2019-01-02 10:00:00', 'I am interested in your position', true),
+        (1, 4, '2019-12-30 09:00:00', 'Please invite I will do my best', true),
+        (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', true),
+        (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', true);
 
 -- Table: message
 -- Table: respond
-INSERT INTO message (resume_id, vacancy_id, message_time, message, current_communication_status)
+INSERT INTO message (resume_id, vacancy_id, message_time, message, is_watched)
     VALUES
-        (1, 1, '2019-01-15 11:00:00', 'Hi, I''m sorry, but your position is not actual for me  ', 'RECEIVED'),
-        (1, 1, '2019-01-15 11:05:00', 'Ok, maybe next time :)', 'RECEIVED'),
-        (2, 1, '2019-01-05 15:11:11', 'Please provide the working schedule', 'RECEIVED'),
-        (2, 1, '2019-01-05 15:11:12', 'From 09.00 till 18.00', 'RECEIVED'),
-        (5, 5, '2019-01-10 12:00:00', 'I reconfirm our meeting', 'RECEIVED');
+        (1, 1, '2019-01-15 11:00:00', 'Hi, I''m sorry, but your position is not actual for me  ', false),
+        (1, 1, '2019-01-15 11:05:00', 'Ok, maybe next time :)', false),
+        (2, 1, '2019-01-05 15:11:11', 'Please provide the working schedule', false),
+        (2, 1, '2019-01-05 15:11:12', 'From 09.00 till 18.00', false),
+        (5, 5, '2019-01-10 12:00:00', 'I reconfirm our meeting', false);
 
 
 -- Table: resume_skill_set

@@ -45,7 +45,6 @@ CREATE TABLE resume (
     is_active boolean NOT NULL
 );
 
-CREATE TYPE COMMUNICATION_STATUS AS ENUM ('RECEIVED', 'WATCHED', 'ACCEPTED', 'DECLINED', 'WITHDRAWN', 'ARCHIVE');
 
 -- Table: company
 CREATE TABLE company (
@@ -104,7 +103,7 @@ CREATE TABLE invitation (
     meeting_time timestamp  NOT NULL,
     invitation_time timestamp,
     message varchar(1000), 
-    current_communication_status COMMUNICATION_STATUS ,
+    is_watched boolean NOT NULL ,
     PRIMARY KEY(resume_id, vacancy_id)
 );
 
@@ -114,7 +113,7 @@ CREATE TABLE respond (
     resume_id integer REFERENCES resume(resume_id),
     apply_date timestamp NOT NULL,
     message varchar(1000),
-    current_communication_status COMMUNICATION_STATUS ,
+    is_watched boolean NOT NULL ,
     PRIMARY KEY(vacancy_id, resume_id)
 );
 
@@ -124,7 +123,7 @@ CREATE TABLE message (
     resume_id integer REFERENCES resume(resume_id),
     message_time timestamp NOT NULL,
     message varchar(1000),
-    current_communication_status COMMUNICATION_STATUS ,
+    is_watched boolean NOT NULL,
     PRIMARY KEY(vacancy_id, resume_id, message_time)
 );
 

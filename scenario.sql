@@ -14,8 +14,14 @@ INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, m
     SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01', true 
        FROM account WHERE login = 'ivanov_ivan';
 
+-- I create my second resume
+INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, max_salary, currency, birth_date, is_active)
+    SELECT account_id, 'Ivan', 'Ivanovich', 'Ivanov', 40000, 60000, 'RUB', '1982-07-01', true 
+       FROM account WHERE login = 'ivanov_ivan';
+
+
 -- Check whether my new resume is in database
-SELECT first_name, last_name, birth_date, max_salary, is_active
+SELECT resume_id, first_name, last_name, birth_date, max_salary, is_active
     FROM resume
     WHERE account_id=33; 
 
@@ -45,48 +51,48 @@ SELECT vacancy_id, vacancy.job_description, vacancy.current_job_type, vacancy.ma
         AND lower(vacancy.job_description) LIKE '%letter of credit%';
 
 -- I want to get some more information about skill required 
-SELECT skill.skill_name, vskl.skill_level 
-    FROM vacancy_skill_set vskl
+SELECT skill.skill_name, vacancy_skill_set.skill_level 
+    FROM vacancy_skill_set
     JOIN skill USING(skill_id)
-    JOIN vacancy vcns USING(vacancy_id)
-        WHERE vcns.vacancy_id = 2;
+    JOIN vacancy  USING(vacancy_id)
+        WHERE vacancy.vacancy_id = 2;
 
 
 -- Vacancy and skill are satisfactory and I make a response 
-INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
+INSERT INTO respond(vacancy_id, resume_id, apply_date, message, is_watched)
     VALUES
-        (2, 6, now(), 'Hello, my name is Ivan. Please consider my resume', 'RECEIVED');
+        (2, 6, now(), 'Hello, my name is Ivan. Please consider my resume', false);
 
 -- Check whether it appears in respond table
-SELECT respond.current_communication_status 
+SELECT respond.is_watched 
         FROM respond
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- Employer read respond 
 UPDATE respond
-    SET current_communication_status = 'ACCEPTED' 
+    SET is_watched = true 
     WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- Check whether status of respond has changed
-SELECT respond.current_communication_status
+SELECT respond.is_watched
         FROM respond
         WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I receive invitation for interview
-INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, current_communication_status, invitation_time)
+INSERT INTO invitation(vacancy_id, resume_id, meeting_time, message, is_watched, invitation_time)
     VALUES
         (2, 6, now() + interval '12 hours', 
          'Hello, your resume is suitable for us, please confirm meeting', 
-         'RECEIVED', now());
+         false, now());
 
 -- Check occurence of new invitation
-SELECT inv.resume_id, inv.vacancy_id, inv.current_communication_status
+SELECT inv.resume_id, inv.vacancy_id, inv.is_watched
     FROM invitation inv
     where inv.meeting_time = (SELECT max(meeting_time) from invitation);
 
 -- I have accepted invitation 
 UPDATE respond
-    SET current_communication_status = 'ACCEPTED'
+    SET is_watched = true
     WHERE vacancy_id = 2 AND resume_id = 6;
 
 -- I was employed
@@ -111,15 +117,37 @@ SELECT resume_id, is_active
 
 -- I want to change this job and start a new search
 -- This time I will search on skills and salary
-SELECT vacancy.vacancy_id, company.company_name, vss.skill_id
+SELECT vacancy.vacancy_id, company.company_name, vacancy_skill_set.skill_id
     FROM vacancy
     JOIN company USING (company_id)
-    JOIN vacancy_skill_set vss USING(vacancy_id)
-    JOIN resume_skill_set rss USING (skill_id)
-        WHERE rss.resume_id = 6
+    JOIN vacancy_skill_set USING(vacancy_id)
+    JOIN resume_skill_set USING (skill_id)
+        WHERE resume_skill_set.resume_id = 6
         AND vacancy.max_salary >= 60000
         AND vacancy.min_salary >= 40000
         AND vacancy.is_active = true; 
+
+-- I check whether I've got new invitations
+SELECT vacancy_id 
+    FROM respond
+        WHERE is_watched = false AND resume_id = 6;
+
+-- I fetch quantity of all invitations for all my resumes
+SELECT COUNT(invitation.resume_id), resume.resume_id
+    FROM resume 
+    LEFT JOIN invitation USING (resume_id)
+    JOIN account USING (account_id)
+    WHERE account_id = 33
+    GROUP BY resume.resume_id;
+
+-- I fetch quantity of new invitations for all my resumes 
+SELECT COUNT(invitation.is_watched), resume.resume_id
+    FROM resume 
+    LEFT JOIN invitation USING (resume_id)
+    JOIN account USING (account_id)
+    WHERE account_id = 33 
+    GROUP BY resume.resume_id;
+    --HAVING invitation.is_watched = false;
 
 -- I make my resume active 
 UPDATE resume
@@ -127,29 +155,29 @@ UPDATE resume
         WHERE resume_id = 6;
 
 -- And send respond to the found vacancy
-INSERT INTO respond(vacancy_id, resume_id, apply_date, message, current_communication_status)
+INSERT INTO respond(vacancy_id, resume_id, apply_date, message, is_watched)
     VALUES
-        (4, 6, now(), 'Hello, my name is Ivan. Please consider my resume', 'RECEIVED');
+        (4, 6, now(), 'Hello, my name is Ivan. Please consider my resume', false);
 
 -- Employer has read my respond
 UPDATE respond
-    SET current_communication_status = 'WATCHED'
+    SET is_watched = true
         WHERE vacancy_id = 4 AND resume_id = 6;
 
 -- It has sent me a message with additional question about my current occupation
-INSERT INTO message (vacancy_id, resume_id, message_time, message, current_communication_status)
+INSERT INTO message (vacancy_id, resume_id, message_time, message, is_watched)
     VALUES
-        (4, 6, '2019-01-11 09:00:00', 'Please explain your current occupation', 'RECEIVED');
+        (4, 6, '2019-01-11 09:00:00', 'Please explain your current occupation', false);
 
 -- I have read this message
 UPDATE message
-    SET current_communication_status = 'WATCHED'
+    SET is_watched = true
         WHERE vacancy_id = 4 AND resume_id = 6 AND message_time = '2019-01-11 09:00:00';
 
--- And send my reply that was unsatisfactory for employer and it has declined my respond
-UPDATE respond
-    SET current_communication_status = 'DECLINED'
-        WHERE vacancy_id = 4 AND resume_id = 6;
+-- Employer check whether he has new responds on its vacancy
+SELECT resume_id
+    FROM respond
+        WHERE vacancy_id = 4 AND is_watched = false;
 
 
 -- Partly it was so because these employer has already find a better candidate
@@ -175,14 +203,3 @@ UPDATE resume
     SET is_active = false 
         WHERE resume_id = 1;
 
--- Hired employee withdraw all other response with 'RECEIVED' status
-UPDATE respond
-    SET current_communication_status = 'WITHDRAWN'
-        WHERE current_communication_status = 'RECEIVED' AND resume_id = 1;
-
--- For hired position employer moves responds and invitations with statuses
--- 'RECEIVED', 'WATCHED', 'ACCEPTED' to 'ARCHIVE' status
-UPDATE respond
-    SET current_communication_status = 'ARCHIVE'
-        WHERE current_communication_status in ('RECEIVED', 'WATCHED', 'ACCEPTED') 
-            AND vacancy_id = 4;
