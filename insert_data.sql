@@ -111,7 +111,8 @@ INSERT INTO respond (resume_id, vacancy_id, apply_date, message, is_watched)
         (2, 3, '2019-01-02 10:00:00', 'I am interested in your position', true),
         (1, 4, '2019-12-30 09:00:00', 'Please invite I will do my best', true),
         (3, 4, '2019-12-31 09:00:00', 'Please invite I will do my best', true),
-        (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', true);
+        (5, 5, '2019-01-03 12:00:00', 'Hi, I am good in for your job', true),
+        (1, 3, '2019-01-02 10:00:00', 'I am interested in your position', false);
 
 -- Table: message
 -- Table: respond

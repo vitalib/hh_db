@@ -129,16 +129,44 @@ SELECT vacancy.vacancy_id, company.company_name, vacancy_skill_set.skill_id
 
 -- I check whether I've got new invitations
 SELECT vacancy_id 
-    FROM respond
+    FROM invitation 
         WHERE is_watched = false AND resume_id = 6;
 
--- I fetch quantity of all invitations for all my resumes
-SELECT COUNT(invitation.resume_id), resume.resume_id
+-- An employer check whether it has received new responds on their vacancy
+SELECT resume_id
+    FROM respond
+        WHERE is_watched = false and vacancy_id = 4;
+
+-- I fetch list of my resumes with  quantity of invitations 
+SELECT account_id, resume.resume_id, count(invitation.vacancy_id)
     FROM resume 
-    LEFT JOIN invitation USING (resume_id)
-    JOIN account USING (account_id)
+    LEFT JOIN invitation USING(resume_id)
     WHERE account_id = 33
-    GROUP BY resume.resume_id;
+    GROUP BY account_id, resume_id;
+
+-- I fetch list of my resumes indicating quanity of new invitations
+SELECT account_id, resume.resume_id, invitation.is_watched, count(invitation.vacancy_id)
+    FROM resume 
+    LEFT JOIN invitation USING(resume_id)
+    WHERE account_id = 33
+    GROUP BY account_id, resume_id, is_watched
+    HAVING is_watched = false;
+
+
+-- Employer fetch list of its vacancies with quantity of all responds 
+SELECT posted_by_id, vacancy.vacancy_id, count(respond.resume_id)
+    FROM vacancy
+    LEFT JOIN respond USING(vacancy_id)
+    WHERE posted_by_id = 11 
+    GROUP BY posted_by_id, vacancy_id;
+
+-- Employer fetch list of vacancies with quantity of new responsed
+SELECT posted_by_id, vacancy.vacancy_id, respond.is_watched, count(respond.resume_id)
+    FROM vacancy
+    LEFT JOIN respond USING(vacancy_id)
+    WHERE posted_by_id = 11
+    GROUP BY posted_by_id, vacancy_id, is_watched
+    HAVING is_watched = false;
 
 -- I fetch quantity of new invitations for all my resumes 
 SELECT COUNT(invitation.is_watched), resume.resume_id
