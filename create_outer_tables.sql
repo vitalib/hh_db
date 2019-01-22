@@ -1,0 +1,14 @@
+CREATE SCHEMA outer_base;
+CREATE TABLE outer_base.skill (like skill including all);
+CREATE TABLE outer_base.job_location (like job_location including all);
+CREATE TABLE outer_base.account (like account including all);
+CREATE TABLE outer_base.resume (like resume including all);
+CREATE TABLE outer_base.company (like company including all);
+CREATE TABLE outer_base.education (like education including all);
+CREATE TABLE outer_base.experience_detail (like experience_detail including all);
+CREATE TABLE outer_base.vacancy(like vacancy including all);
+CREATE TABLE outer_base.invitation (like invitation including all);
+CREATE TABLE outer_base.respond(like respond including all);
+CREATE TABLE outer_base.message (like message including all);
+CREATE TABLE outer_base.resume_skill_set(like resume_skill_set including all);
+CREATE TABLE outer_base.vacancy_skill_set(like vacancy_skill_set including all);
