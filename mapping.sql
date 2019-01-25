@@ -1,4 +1,3 @@
-\c hh_homework;
 DROP TABLE IF EXISTS map_job_location;
 DROP TABLE IF EXISTS map_skill;
 DROP TABLE IF EXISTS map_account;
@@ -15,8 +14,6 @@ CREATE TABLE map_skill(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_account(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_resume(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_company(primary_id integer, outer_id INTEGER PRIMARY KEY);
-CREATE TABLE map_education(primary_id integer, outer_id INTEGER PRIMARY KEY);
-CREATE TABLE map_experience(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_vacancy(primary_id integer, outer_id INTEGER PRIMARY KEY);
 
 CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAULT false,
@@ -24,6 +21,6 @@ CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAUL
 
 INSERT INTO copied_tables (name)
     VALUES
-        ('job_location'), ('skill'), ('account'), ('resume'), ('company'), ('education'),
-            ('experience'), ('vacancy'), ('invitation'), ('respond'), ('message'),
+        ('job_location'), ('skill'), ('account'), ('resume'), ('company'),
+            ('vacancy'), ('invitation'), ('respond'), ('message'),
             ('resume_skill_set'), ('vacancy_skill_set');

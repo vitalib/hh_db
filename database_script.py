@@ -1,24 +1,28 @@
 import psycopg2
 
-def allDataTransfered(cursor):
+def allDataTransfered(conn):
+    cursor = conn.cursor()
     cursor.execute('SELECT count(*) FROM copied_tables where is_copied=false')
-    return cursor.fetchone()[0] == 0
+    result = cursor.fetchone()[0] == 0
+    cursor.close()
+    return result
 
-def transferBatch(cursor, script):
-    cursor.execute(script)
-
-
+def transferBatch(conn, script):
+    cursor = conn.cursor()
+    cursor.callproc('copy', [10])
+    cursor.close()
+    conn.commit()
 
 def init():
     conn = psycopg2.connect(host='localhost', database='hh_homework',
     user='vitalib', password="dbnfkbr83")
     cursor = conn.cursor()
     cursor.execute(open('mapping.sql', 'r').read())
-    return cursor
+    return conn
 
 if __name__ == '__main__':
-    cursor = init()
+    conn = init()
     transferBatch_script = open('transfer.sql', 'r').read()
-    while (not allDataTransfered(cursor)):
+    while (not allDataTransfered(conn)):
         print("in while loop")
-        transferBatch(cursor, transferBatch_script)
+        transferBatch(conn, transferBatch_script)
