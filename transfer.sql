@@ -99,11 +99,14 @@ begin
     ORDER BY id
     limit 1;
     raise notice 'Table for copy %', table_for_copy;
-    if (table_for_copy = 'job_location') then
-        PERFORM copy_job_location(limit_num);
-    elseif (table_for_copy = 'skill') then
-        PERFORM copy_skill(limit_num);
-    end if;
+    case table_for_copy
+        when 'job_location' then
+            PERFORM copy_job_location(limit_num);
+        when 'skill' then
+            PERFORM copy_skill(limit_num);
+        else
+            table_for_copy := 'kuku';
+    end case;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
