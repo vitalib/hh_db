@@ -35,3 +35,11 @@ VALUES
 UPDATE copied_tables SET
     table_rows = (select count(*) from outer_base.invitation)
     where name = 'invitation';
+
+UPDATE copied_tables SET
+    table_rows = (select count(*) from outer_base.respond)
+    where name = 'respond';
+
+UPDATE copied_tables SET
+    table_rows = (select count(*) from outer_base.message)
+    where name = 'message';

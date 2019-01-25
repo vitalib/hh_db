@@ -1,10 +1,10 @@
-\set big_value 1000000
-\set mid_value 100000
-\set low_value 10000
+\set big_value 100000
+\set mid_value 10000
+\set low_value 1000
 
 \set respond_quantity :big_value
 \set resume_quantity :mid_value
-\set vacancy_quantity :big_value0
+\set vacancy_quantity :big_value
 \set invitation_quantity :big_value
 \set message_quantity :big_value
 \set vacancy_skill_set_quantity :mid_value
