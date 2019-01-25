@@ -1,8 +1,8 @@
-\set respond_quantity 50000
-\set resume_quantity 50000
-\set vacancy_quantity 50000
-\set invitation_quantity 50000
-\set message_quantity 50000
+\set respond_quantity 500
+\set resume_quantity 500
+\set vacancy_quantity 500
+\set invitation_quantity 500
+\set message_quantity 500
 \set vacancy_skill_set_quantity 50
 \set resume_skill_set_quantity 50
 \set skill_quantity 10
