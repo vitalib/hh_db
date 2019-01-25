@@ -265,6 +265,61 @@ end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+CREATE OR REPLACE FUNCTION copy_invitation(limit_num int)
+RETURNS integer AS
+$BODY$
+DECLARE
+    an_offset integer;
+    rows integer;
+    is_table_updated boolean;
+    inserted_rows integer;
+begin
+    select table_offset
+    into an_offset
+        from copied_tables
+            where name='invitation';
+    raise notice 'in invitatino: offset %', an_offset;
+    select table_rows
+    into rows
+        from copied_tables
+            where name='invitation';
+    raise notice 'in invitatino: rows %', rows;
+    with ids as(
+    insert into invitation(
+        resume_id,
+        vacancy_id,
+        meeting_time,
+        invitation_time,
+        message,
+        is_watched)
+        select map_resume.primary_id,
+            map_vacancy.primary_id,
+            meeting_time,
+            invitation_time,
+            message,
+            is_watched
+        from outer_base.invitation
+        join map_resume on map_resume.outer_id = resume_id
+        join map_vacancy on map_vacancy.outer_id = vacancy_id
+        order by map_resume.primary_id, map_vacancy.primary_id
+        limit limit_num offset an_offset
+        returning resume_id)
+    select count(*) into inserted_rows
+    from ids;
+    an_offset := an_offset + limit_num;
+    -- raise notice 'in invitatino: Rows copied (%)';
+    if (an_offset > rows) then
+        update copied_tables set is_copied=true
+            where name ='invitation';
+    else
+        update copied_tables set table_offset = an_offset
+            where name = 'invitation';
+    end if;
+    return inserted_rows;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
 CREATE OR REPLACE FUNCTION copy(limit_num int)
 RETURNS void AS
 $BODY$
@@ -291,6 +346,8 @@ begin
             PERFORM copy_company(limit_num);
         when 'vacancy' then
             PERFORM copy_vacancy(limit_num);
+        when 'invitation' then
+            PERFORM copy_invitation(limit_num);
         else
             table_for_copy := 'kuku';
     end case;

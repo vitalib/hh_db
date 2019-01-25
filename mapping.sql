@@ -17,10 +17,21 @@ CREATE TABLE map_company(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_vacancy(primary_id integer, outer_id INTEGER PRIMARY KEY);
 
 CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAULT false,
-    is_updated boolean DEFAULT false);
+    is_updated boolean DEFAULT false, table_offset integer DEFAULT 0, table_rows integer default 0);
 
 INSERT INTO copied_tables (name)
-    VALUES
-        ('job_location'), ('skill'), ('account'), ('resume'), ('company'),
-            ('vacancy'), ('invitation'), ('respond'), ('message'),
-            ('resume_skill_set'), ('vacancy_skill_set');
+VALUES
+('job_location'), ('skill'), ('account'), ('resume'), ('company'),
+('vacancy'), ('invitation'), ('respond'), ('message'),
+('resume_skill_set'), ('vacancy_skill_set');
+
+
+-- CREATE MATERIALIZED VIEW outer_base.invitation_view
+-- as
+-- select * from outer_base.invitation
+-- order by resume_id, vacancy_id
+-- with data;
+
+UPDATE copied_tables SET
+    table_rows = (select count(*) from outer_base.invitation)
+    where name = 'invitation';

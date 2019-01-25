@@ -1,16 +1,20 @@
-\set respond_quantity 21
-\set resume_quantity 21
-\set vacancy_quantity 21
-\set invitation_quantity 21
-\set message_quantity 21
-\set vacancy_skill_set_quantity 21
-\set resume_skill_set_quantity 21
-\set skill_quantity 21
-\set job_location_quantity 21
-\set account_quantity 21
-\set company_quantity 21
-\set education_quantity 21
-\set experience_detail_quantity 21
+\set big_value 1000000
+\set mid_value 500000
+\set low_value 100000
+
+\set respond_quantity :big_value
+\set resume_quantity :big_value
+\set vacancy_quantity :big_value
+\set invitation_quantity :big_value
+\set message_quantity :big_value
+\set vacancy_skill_set_quantity :mid_value
+\set resume_skill_set_quantity :mid_value
+\set skill_quantity :mid_value
+\set job_location_quantity :mid_value
+\set account_quantity :mid_value
+\set company_quantity :mid_value
+\set education_quantity :mid_value
+\set experience_detail_quantity :mid_value
 \set limit_num 0;
 
 INSERT INTO outer_base.skill (skill_name)
