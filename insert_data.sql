@@ -31,7 +31,6 @@ INSERT INTO account (type_of_user, login, password, email, is_active,
 -- Table: skill
 INSERT INTO skill (skill_name)
     VALUES ('letter of credit'), ('currency control'), ('java'), ('python'), ('postgres'), ('javascript'), ('go');
-SELECT * FROM SKILL;
 -- Table: job_location
 
 INSERT INTO job_location

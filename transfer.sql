@@ -303,6 +303,7 @@ begin
         join map_vacancy on map_vacancy.outer_id = vacancy_id
         order by map_resume.primary_id, map_vacancy.primary_id
         limit limit_num offset an_offset
+        on conflict do nothing
         returning resume_id)
     select count(*) into inserted_rows
     from ids;
