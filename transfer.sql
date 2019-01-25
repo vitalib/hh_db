@@ -377,6 +377,154 @@ end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+CREATE OR REPLACE FUNCTION copy_message(limit_num int)
+RETURNS integer AS
+$BODY$
+DECLARE
+    an_offset integer;
+    rows integer;
+    is_table_updated boolean;
+    inserted_rows integer;
+begin
+    select table_offset
+        into an_offset
+            from copied_tables
+                where name='message';
+    raise notice 'in invitatino: offset %', an_offset;
+    select table_rows
+        into rows
+            from copied_tables
+                where name='message';
+    raise notice 'in invitatino: rows %', rows;
+    with ids as(
+    insert into message(
+        vacancy_id,
+        resume_id,
+        message_time,
+        message,
+        is_watched)
+        select
+            map_vacancy.primary_id,
+            map_resume.primary_id,
+            message_time,
+            message,
+            is_watched
+        from outer_base.message
+        join map_resume on map_resume.outer_id = resume_id
+        join map_vacancy on map_vacancy.outer_id = vacancy_id
+        order by map_resume.primary_id, map_vacancy.primary_id
+        limit limit_num offset an_offset
+        on conflict do nothing
+        returning resume_id)
+    select count(*) into inserted_rows
+    from ids;
+    an_offset := an_offset + limit_num;
+    -- raise notice 'in invitatino: Rows copied (%)';
+    if (an_offset > rows) then
+        update copied_tables set is_copied=true
+            where name ='message';
+    else
+        update copied_tables set table_offset = an_offset
+            where name = 'message';
+    end if;
+    return inserted_rows;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION copy_resume_skill_set(limit_num int)
+RETURNS integer AS
+$BODY$
+DECLARE
+    an_offset integer;
+    rows integer;
+    is_table_updated boolean;
+    inserted_rows integer;
+begin
+    select table_offset
+        into an_offset
+            from copied_tables
+                where name='resume_skill_set';
+    select table_rows
+        into rows
+            from copied_tables
+                where name='resume_skill_set';
+    with ids as(
+    insert into resume_skill_set(
+        resume_id, skill_id, skill_level)
+        select
+            map_resume.primary_id,
+            map_skill.primary_id,
+            skill_level
+        from outer_base.resume_skill_set
+        join map_skill on map_skill.outer_id = skill_id
+        join map_resume on map_resume.outer_id = resume_id
+        order by map_resume.primary_id, map_skill.primary_id
+        limit limit_num offset an_offset
+        on conflict do nothing
+        returning resume_id)
+    select count(*) into inserted_rows
+    from ids;
+    an_offset := an_offset + limit_num;
+    -- raise notice 'in invitatino: Rows copied (%)';
+    if (an_offset > rows) then
+        update copied_tables set is_copied=true
+            where name ='resume_skill_set';
+    else
+        update copied_tables set table_offset = an_offset
+            where name = 'resume_skill_set';
+    end if;
+    return inserted_rows;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION copy_vacancy_skill_set(limit_num int)
+RETURNS integer AS
+$BODY$
+DECLARE
+    an_offset integer;
+    rows integer;
+    is_table_updated boolean;
+    inserted_rows integer;
+begin
+    select table_offset
+        into an_offset
+            from copied_tables
+                where name='vacancy_skill_set';
+    select table_rows
+        into rows
+            from copied_tables
+                where name='vacancy_skill_set';
+    with ids as(
+    insert into vacancy_skill_set(
+        skill_id, vacancy_id, skill_level)
+        select
+            map_skill.primary_id,
+            map_vacancy.primary_id,
+            skill_level
+        from outer_base.vacancy_skill_set
+        join map_skill on map_skill.outer_id = skill_id
+        join map_vacancy on map_vacancy.outer_id = vacancy_id
+        order by map_vacancy.primary_id, map_skill.primary_id
+        limit limit_num offset an_offset
+        on conflict do nothing
+        returning vacancy_id)
+    select count(*) into inserted_rows
+    from ids;
+    an_offset := an_offset + limit_num;
+    if (an_offset > rows) then
+        update copied_tables set is_copied=true
+            where name ='vacancy_skill_set';
+    else
+        update copied_tables set table_offset = an_offset
+            where name = 'vacancy_skill_set';
+    end if;
+    return inserted_rows;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
 CREATE OR REPLACE FUNCTION copy(limit_num int)
 RETURNS void AS
 $BODY$
@@ -407,12 +555,18 @@ begin
             PERFORM copy_invitation(limit_num);
         when 'respond' then
             PERFORM copy_respond(limit_num);
+        when 'message' then
+            PERFORM copy_message(limit_num);
+        when 'resume_skill_set' then
+            PERFORM copy_resume_skill_set(limit_num);
+        when 'vacancy_skill_set' then
+            PERFORM copy_vacancy_skill_set(limit_num);
         else
-            table_for_copy := 'kuku';
+            table_for_copy := 'Error table';
     end case;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
-DO $$ BEGIN
-    PERFORM copy(10);
-END $$;
+-- DO $$ BEGIN
+--     PERFORM copy(10);
+-- END $$;

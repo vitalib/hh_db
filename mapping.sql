@@ -43,3 +43,11 @@ UPDATE copied_tables SET
 UPDATE copied_tables SET
     table_rows = (select count(*) from outer_base.message)
     where name = 'message';
+
+UPDATE copied_tables SET
+    table_rows = (select count(*) from outer_base.resume_skill_set)
+    where name = 'resume_skill_set';
+
+UPDATE copied_tables SET
+    table_rows = (select count(*) from outer_base.vacancy_skill_set)
+    where name = 'vacancy_skill_set';

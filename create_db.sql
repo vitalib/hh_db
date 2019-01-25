@@ -1,4 +1,16 @@
 \c hh_homework;
+DROP TABLE IF EXISTS skill;
+DROP TABLE IF EXISTS job_location;
+DROP TABLE IF EXISTS account;
+DROP TABLE IF EXISTS resume;
+DROP TABLE IF EXISTS company;
+DROP TABLE IF EXISTS education;
+DROP TABLE IF EXISTS experience_detail;
+DROP TABLE IF EXISTS vacancy;
+DROP TABLE IF EXISTS respond;
+DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS vacancy_skill_set;
+DROP TABLE IF EXISTS resume_skill_set;
 
 -- Table: skill
 CREATE TABLE skill (
