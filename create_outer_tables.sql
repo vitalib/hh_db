@@ -36,7 +36,7 @@ CREATE TABLE outer_base.account (
 -- Table: resume
 CREATE TABLE outer_base.resume (
     resume_id serial PRIMARY KEY,
-    account_id integer REFERENCES account(account_id),
+    account_id integer REFERENCES outer_base.account(account_id),
     first_name varchar(50)  NOT NULL,
     middle_name varchar(50),
     last_name varchar(50)  NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE outer_base.company (
 
 -- Table: education
 CREATE TABLE outer_base.education (
-    resume_id integer REFERENCES resume(resume_id),
+    resume_id integer REFERENCES outer_base.resume(resume_id),
     course_name varchar(50),
     start_date date ,
     end_date date,
@@ -69,14 +69,14 @@ CREATE TABLE outer_base.education (
 
 -- Table: experience_detail
 CREATE TABLE outer_base.experience_detail (
-    resume_id integer REFERENCES resume(resume_id),
+    resume_id integer REFERENCES outer_base.resume(resume_id),
     start_date date,
     is_current_job boolean NOT NULL,
     end_date date,
     job_title varchar(50) NOT NULL,
     company_name varchar(100) NOT NULL,
     description varchar(4000) NOT NULL,
-    job_location_id integer REFERENCES job_location(job_location_id),
+    job_location_id integer REFERENCES outer_base.job_location(job_location_id),
     PRIMARY KEY(resume_id, start_date, job_title)
 );
 
@@ -85,12 +85,12 @@ CREATE TABLE outer_base.experience_detail (
 -- Table: vacancy
 CREATE TABLE outer_base.vacancy (
     vacancy_id serial PRIMARY KEY,
-    posted_by_id integer REFERENCES account(account_id),
+    posted_by_id integer REFERENCES outer_base.account(account_id),
     current_job_type JOB_TYPE,
-    company_id integer  REFERENCES company(company_id),
+    company_id integer  REFERENCES outer_base.company(company_id),
     is_company_name_hidden boolean  NOT NULL,
     job_description varchar(500)  NOT NULL,
-    job_location_id integer REFERENCES job_location(job_location_id),
+    job_location_id integer REFERENCES outer_base.job_location(job_location_id),
     is_active boolean NOT NULL,
     min_salary integer,
     max_salary integer,
@@ -100,8 +100,8 @@ CREATE TABLE outer_base.vacancy (
 
 -- Table: invitation
 CREATE TABLE outer_base.invitation (
-    resume_id integer REFERENCES resume(resume_id),
-    vacancy_id integer REFERENCES vacancy(vacancy_id),
+    resume_id integer REFERENCES outer_base.resume(resume_id),
+    vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     meeting_time timestamp  NOT NULL,
     invitation_time timestamp,
     message varchar(1000),
@@ -111,8 +111,8 @@ CREATE TABLE outer_base.invitation (
 
 -- Table: respond
 CREATE TABLE outer_base.respond (
-    vacancy_id integer REFERENCES vacancy(vacancy_id),
-    resume_id integer REFERENCES resume(resume_id),
+    vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
+    resume_id integer REFERENCES outer_base.resume(resume_id),
     apply_date timestamp NOT NULL,
     message varchar(1000),
     is_watched boolean NOT NULL ,
@@ -121,8 +121,8 @@ CREATE TABLE outer_base.respond (
 
 -- Table: message
 CREATE TABLE outer_base.message (
-    vacancy_id integer REFERENCES vacancy(vacancy_id),
-    resume_id integer REFERENCES resume(resume_id),
+    vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
+    resume_id integer REFERENCES outer_base.resume(resume_id),
     message_time timestamp NOT NULL,
     message varchar(1000),
     is_watched boolean NOT NULL,
@@ -131,16 +131,16 @@ CREATE TABLE outer_base.message (
 
 -- Table: resume_skill_set
 CREATE TABLE outer_base.resume_skill_set (
-    resume_id integer REFERENCES resume(resume_id),
-    skill_id integer REFERENCES skill(skill_id),
+    resume_id integer REFERENCES outer_base.resume(resume_id),
+    skill_id integer REFERENCES outer_base.skill(skill_id),
     skill_level integer NOT NULL,
     PRIMARY KEY(resume_id, skill_id)
 );
 
 -- Table: vacancy_skill_set
 CREATE TABLE outer_base.vacancy_skill_set (
-    skill_id integer REFERENCES skill(skill_id),
-    vacancy_id integer REFERENCES vacancy(vacancy_id),
+    skill_id integer REFERENCES outer_base.skill(skill_id),
+    vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     skill_level integer NOT NULL,
     PRIMARY KEY(skill_id, vacancy_id)
 );
