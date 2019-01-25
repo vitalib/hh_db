@@ -6,12 +6,12 @@
 \set vacancy_skill_set_quantity 50
 \set resume_skill_set_quantity 50
 \set skill_quantity 10
-\set job_location_quantity 10
+\set job_location_quantity 31
 \set account_quantity 50
 \set company_quantity 50
 \set education_quantity 50
 \set experience_detail_quantity 50
-\set limit_num 5;
+\set limit_num 0;
 
 INSERT INTO outer_base.skill (skill_name)
    SELECT 'skill'|| a.n

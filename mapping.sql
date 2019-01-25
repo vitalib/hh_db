@@ -19,7 +19,8 @@ CREATE TABLE map_education(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_experience(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_vacancy(primary_id integer, outer_id INTEGER PRIMARY KEY);
 
-CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAULT false);
+CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAULT false,
+    is_updated boolean DEFAULT false);
 
 INSERT INTO copied_tables (name)
     VALUES
