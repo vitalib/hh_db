@@ -1,18 +1,18 @@
 \c hh_homework;
-
-DROP TABLE IF EXISTS outer_base.skill;
-DROP TABLE IF EXISTS outer_base.job_location;
-DROP TABLE IF EXISTS outer_base.account;
-DROP TABLE IF EXISTS outer_base.resume;
-DROP TABLE IF EXISTS outer_base.experience_detail;
-DROP TABLE IF EXISTS outer_base.vacancy;
-DROP TABLE IF EXISTS outer_base.respond;
-DROP TABLE IF EXISTS outer_base.message;
-DROP TABLE IF EXISTS outer_base.vacancy_skill_set;
-DROP TABLE IF EXISTS outer_base.resume_skill_set;
-DROP SCHEMA IF EXISTS outer_base;
-
+DROP SCHEMA IF EXISTS outer_base CASCADE;
+-- DROP TABLE IF EXISTS outer_base.skill;
+-- DROP TABLE IF EXISTS outer_base.job_location;
+-- DROP TABLE IF EXISTS outer_base.account;
+-- DROP TABLE IF EXISTS outer_base.resume;
+-- DROP TABLE IF EXISTS outer_base.experience_detail;
+-- DROP TABLE IF EXISTS outer_base.vacancy;
+-- DROP TABLE IF EXISTS outer_base.respond;
+-- DROP TABLE IF EXISTS outer_base.message;
+-- DROP TABLE IF EXISTS outer_base.vacancy_skill_set;
+-- DROP TABLE IF EXISTS outer_base.resume_skill_set;
+-- DROP SCHEMA IF EXISTS outer_base;
 CREATE SCHEMA outer_base;
+
 
 -- Table: skill
 CREATE TABLE outer_base.skill (
