@@ -1,27 +1,27 @@
 CREATE EXTENSION pgcrypto;
 
-INSERT INTO account (type_of_user, login, password, email, is_active, 
-	registration_date, last_login_date) 
-		SELECT 'APPLICANT', 'newseeker' || a.n, 
-    		crypt('password'|| a.n, gen_salt('bf')), 
-			a.n ||'seeker@mail.ru', true, 
+INSERT INTO account (type_of_user, login, password, email, is_active,
+	registration_date, last_login_date)
+		SELECT 'APPLICANT', 'newseeker' || a.n,
+    		crypt('password'|| a.n, gen_salt('bf')),
+			a.n ||'seeker@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(1, 10) as a(n);
 
-INSERT INTO account (type_of_user, login, password, email, is_active, 
-	registration_date, last_login_date) 
-		SELECT 'RECRUITER', 'recruiter' || a.n, 
-    		crypt('password'|| a.n, gen_salt('bf')), 
+INSERT INTO account (type_of_user, login, password, email, is_active,
+	registration_date, last_login_date)
+		SELECT 'RECRUITER', 'recruiter' || a.n,
+    		crypt('password'|| a.n, gen_salt('bf')),
 			a.n ||'recruiter@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(10, 20) as a(n);
 
-INSERT INTO account (type_of_user, login, password, email, is_active, 
-	registration_date, last_login_date) 
-		SELECT 'HH_AGENCY', 'newagency' || a.n, 
-    		crypt('password'|| a.n, gen_salt('bf')), 
+INSERT INTO account (type_of_user, login, password, email, is_active,
+	registration_date, last_login_date)
+		SELECT 'HH_AGENCY', 'newagency' || a.n,
+    		crypt('password'|| a.n, gen_salt('bf')),
 			a.n ||'agency@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000) FROM generate_series(20, 30) as a(n);
@@ -31,8 +31,7 @@ INSERT INTO account (type_of_user, login, password, email, is_active,
 -- Table: skill
 INSERT INTO skill (skill_name)
     VALUES ('letter of credit'), ('currency control'), ('java'), ('python'), ('postgres'), ('javascript'), ('go');
-
-
+SELECT * FROM SKILL;
 -- Table: job_location
 
 INSERT INTO job_location
@@ -132,7 +131,7 @@ INSERT INTO resume_skill_set(resume_id, skill_id, skill_level)
         (1, 2, 3),
         (2, 1, 6),
         (3, 3, 7),
-        (4, 1, 6); 
+        (4, 1, 6);
 
 
 -- Table: vacancy_skill_set
@@ -142,4 +141,4 @@ INSERT INTO vacancy_skill_set(vacancy_id, skill_id, skill_level)
         (1, 2, 3),
         (2, 1, 6),
         (3, 3, 7),
-        (4, 1, 6); 
+        (4, 1, 6);
