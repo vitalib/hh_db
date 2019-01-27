@@ -1,6 +1,6 @@
-\set big_value 10000000
-\set mid_value 1000000
-\set low_value 100000
+\set big_value 1000000
+\set mid_value 100000
+\set low_value 10000
 
 \set respond_quantity :big_value
 \set resume_quantity :mid_value * 2
@@ -26,7 +26,7 @@ select * from outer_base.skill limit :limit_num;
 INSERT INTO  outer_base.job_location (street_address ,city ,state ,country, zip )
     SELECT 'addres' || a.n, 'city' || a.n, 'state' || a.n, 'Russia', a.n
         FROM generate_series(1, :job_location_quantity) as a(n);
-select * from outer_base.job_location limit 10;
+select * from outer_base.job_location limit :limit_num;
 
 INSERT INTO outer_base.account(type_of_user, login, password, email, is_active,
     registration_date, last_login_date)

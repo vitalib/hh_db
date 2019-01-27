@@ -124,6 +124,7 @@ CREATE TABLE outer_base.invitation (
 
 -- Table: respond
 CREATE TABLE outer_base.respond (
+    respond_id serial,
     vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     resume_id integer REFERENCES outer_base.resume(resume_id),
     apply_date timestamp NOT NULL,
@@ -134,6 +135,7 @@ CREATE TABLE outer_base.respond (
 
 -- Table: message
 CREATE TABLE outer_base.message (
+    message_id serial,
     vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     resume_id integer REFERENCES outer_base.resume(resume_id),
     message_time timestamp NOT NULL,
@@ -144,6 +146,7 @@ CREATE TABLE outer_base.message (
 
 -- Table: resume_skill_set
 CREATE TABLE outer_base.resume_skill_set (
+    resume_skill_set_id serial,
     resume_id integer REFERENCES outer_base.resume(resume_id),
     skill_id integer REFERENCES outer_base.skill(skill_id),
     skill_level integer NOT NULL,
@@ -152,6 +155,7 @@ CREATE TABLE outer_base.resume_skill_set (
 
 -- Table: vacancy_skill_set
 CREATE TABLE outer_base.vacancy_skill_set (
+    vacancy_skill_set_id serial,
     skill_id integer REFERENCES outer_base.skill(skill_id),
     vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     skill_level integer NOT NULL,
