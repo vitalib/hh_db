@@ -26,6 +26,11 @@ VALUES
 ('resume_skill_set'), ('vacancy_skill_set');
 
 
+-- CREATE INDEX ON outer_base.invitation (resume_id, vacancy_id);
+-- ALTER TABLE invitation DROP CONSTRAINT "invitation_resume_id_fkey";
+-- ALTER TABLE invitation DROP CONSTRAINT "invitation_vacancy_id_fkey";
+
+
 -- CREATE MATERIALIZED VIEW outer_base.invitation_view
 -- as
 -- select * from outer_base.invitation
