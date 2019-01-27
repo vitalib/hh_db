@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS map_experience;
 DROP TABLE IF EXISTS map_vacancy;
 DROP TABLE IF EXISTS copied_tables;
 DROP TABLE IF EXISTS invitations_copied;
+DROP TABLE IF EXISTS responds_copied;
 
 
 CREATE TABLE map_job_location(primary_id integer, outer_id INTEGER PRIMARY KEY);
@@ -18,6 +19,8 @@ CREATE TABLE map_company(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE map_vacancy(primary_id integer, outer_id INTEGER PRIMARY KEY);
 CREATE TABLE invitations_copied(copied_resume_id integer, copied_vacancy_id INTEGER,
  primary key(copied_resume_id, copied_vacancy_id));
+ CREATE TABLE responds_copied(copied_resume_id integer, copied_vacancy_id INTEGER,
+  primary key(copied_resume_id, copied_vacancy_id));
 
 CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAULT false,
     is_updated boolean DEFAULT false, table_offset integer DEFAULT 0, table_rows integer default 0);
@@ -30,6 +33,7 @@ VALUES
 
 
 CREATE INDEX ON outer_base.invitation (invitation_id);
+CREATE INDEX ON outer_base.respond (respond_id);
 -- ALTER TABLE invitation DROP CONSTRAINT "invitation_resume_id_fkey";
 -- ALTER TABLE invitation DROP CONSTRAINT "invitation_vacancy_id_fkey";
 
