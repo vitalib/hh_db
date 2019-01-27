@@ -274,48 +274,40 @@ DECLARE
     is_table_updated boolean;
     inserted_rows integer;
 begin
-    select table_offset
-    into an_offset
-        from copied_tables
-            where name='invitation';
-    raise notice 'in invitatino: offset %', an_offset;
-    select table_rows
-    into rows
-        from copied_tables
-            where name='invitation';
-    raise notice 'in invitatino: rows %', rows;
-    with ids as(
+
+    with for_delte_idx as (
+        select invitation_id from outer_base.invitation limit limit_num
+    ),
+    ids as(
     insert into invitation(
-        resume_id,
-        vacancy_id,
+    resume_id,
+    vacancy_id,
+    meeting_time,
+    invitation_time,
+    message,
+    is_watched)
+    select map_resume.primary_id,
+        map_vacancy.primary_id,
         meeting_time,
         invitation_time,
         message,
-        is_watched)
-        select map_resume.primary_id,
-            map_vacancy.primary_id,
-            meeting_time,
-            invitation_time,
-            message,
-            is_watched
-        from outer_base.invitation
-        join map_resume on map_resume.outer_id = resume_id
-        join map_vacancy on map_vacancy.outer_id = vacancy_id
-        order by map_resume.primary_id, map_vacancy.primary_id
-        limit limit_num offset an_offset
-        on conflict do nothing
-        returning resume_id)
+        is_watched
+    from outer_base.invitation
+    join map_resume on map_resume.outer_id = resume_id
+    join map_vacancy on map_vacancy.outer_id = vacancy_id
+    join for_delte_idx using(invitation_id)
+    on conflict do nothing),
+    del as (
+        delete from outer_base.invitation
+            where
+                invitation_id in (select * from for_delte_idx)
+    returning invitation_id)
     select count(*) into inserted_rows
-    from ids;
-    an_offset := an_offset + limit_num;
-    -- raise notice 'in invitatino: Rows copied (%)';
-    if (an_offset > rows) then
-        update copied_tables set is_copied=true
-            where name ='invitation';
-    else
-        update copied_tables set table_offset = an_offset
-            where name = 'invitation';
-    end if;
+    from del;
+    if (inserted_rows = 0) then
+    update copied_tables set is_copied=true
+        where name ='invitation';
+end if;
     return inserted_rows;
 end;
 $BODY$

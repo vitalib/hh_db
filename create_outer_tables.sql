@@ -112,6 +112,7 @@ CREATE TABLE outer_base.vacancy (
 
 -- Table: invitation
 CREATE TABLE outer_base.invitation (
+    invitation_id serial,
     resume_id integer REFERENCES outer_base.resume(resume_id),
     vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     meeting_time timestamp  NOT NULL,
