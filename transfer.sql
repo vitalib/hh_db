@@ -360,48 +360,36 @@ $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION copy_message(limit_num int)
-RETURNS integer AS
+RETURNS void AS
 $BODY$
 DECLARE
     an_offset integer;
     rows integer;
-    is_table_updated boolean;
-    inserted_rows integer;
 begin
+ALTER TABLE message DROP CONSTRAINT "message_resume_id_fkey";
+ALTER TABLE message DROP CONSTRAINT "message_vacancy_id_fkey";
     select table_offset
         into an_offset
             from copied_tables
                 where name='message';
-    raise notice 'in invitatino: offset %', an_offset;
     select table_rows
         into rows
             from copied_tables
                 where name='message';
-    raise notice 'in invitatino: rows %', rows;
-    with ids as(
-    insert into message(
-        vacancy_id,
-        resume_id,
-        message_time,
-        message,
-        is_watched)
-        select
-            map_vacancy.primary_id,
-            map_resume.primary_id,
-            message_time,
-            message,
-            is_watched
-        from outer_base.message
-        join map_resume on map_resume.outer_id = resume_id
-        join map_vacancy on map_vacancy.outer_id = vacancy_id
-        order by map_resume.primary_id, map_vacancy.primary_id
-        limit limit_num offset an_offset
-        on conflict do nothing
-        returning resume_id)
-    select count(*) into inserted_rows
-    from ids;
+    with inv_batch as (
+        select resume_id, vacancy_id, message_time  ,
+        message, is_watched
+        FROM outer_base.message
+        where message_id between an_offset + 1 and an_offset + limit_num
+    )
+    insert into message(resume_id, vacancy_id, message_time, message, is_watched)
+    select map_resume.primary_id, map_vacancy.primary_id, message_time,
+         message, is_watched
+    from inv_batch
+    join map_resume on map_resume.outer_id = resume_id
+    join map_vacancy on map_vacancy.outer_id = vacancy_id
+    on conflict do nothing;
     an_offset := an_offset + limit_num;
-    -- raise notice 'in invitatino: Rows copied (%)';
     if (an_offset > rows) then
         update copied_tables set is_copied=true
             where name ='message';
@@ -409,7 +397,10 @@ begin
         update copied_tables set table_offset = an_offset
             where name = 'message';
     end if;
-    return inserted_rows;
+    ALTER TABLE message ADD CONSTRAINT "message_resume_id_fkey" FOREIGN KEY (resume_id)
+    REFERENCES resume(resume_id);
+    ALTER TABLE message ADD CONSTRAINT "message_vacancy_id_fkey" FOREIGN KEY (vacancy_id)
+    REFERENCES vacancy(vacancy_id);
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
