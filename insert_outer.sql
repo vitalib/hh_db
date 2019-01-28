@@ -1,6 +1,6 @@
-\set big_value 10000000
-\set mid_value 1000000
-\set low_value 100000
+\set big_value 100000
+\set mid_value 10000
+\set low_value 1000
 
 \set respond_quantity :big_value
 \set resume_quantity :mid_value * 2
@@ -120,7 +120,12 @@ From
     generate_series(1, :experience_detail_quantity) as a(n);
 select * from outer_base.experience_detail limit :limit_num;
 
-
+WITH employers AS (
+    SELECT account_id FROM outer_base.account
+        WHERE type_of_user != 'APPLICANT'
+), total_employers as (
+    SELECT count(*) as total FROM employers
+)
 INSERT INTO outer_base.vacancy (
     posted_by_id,
     current_job_type,
@@ -133,7 +138,7 @@ INSERT INTO outer_base.vacancy (
     max_salary,
     publication_time)
 SELECT
-    ceil(random() * :account_quantity),
+    (SELECT account_id FROM employers OFFSET floor(random()* (SELECT  * from total_employers)) LIMIT 1),
     (ARRAY['REMOTE_JOB', 'PART_TIME', 'FULL_TIME'])[ceil(random()*3)]::JOB_TYPE,
     ceil(random() * :company_quantity),
     random() > 0.8,
