@@ -32,7 +32,6 @@ begin
     )
     select count(*) into inserted_rows
     from ins;
-    raise notice 'Rows copied %', inserted_rows;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='job_location';
@@ -75,7 +74,6 @@ begin
     )
     select count(*) into inserted_rows
     from ins;
-    raise notice 'in skills: Rows copied %', inserted_rows;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='skill';
@@ -120,7 +118,6 @@ begin
     )
     select count(*) into inserted_rows
     from ins;
-    raise notice 'in account: Rows copied %', inserted_rows;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='account';
@@ -135,9 +132,6 @@ $BODY$
 DECLARE
     inserted_rows integer;
 begin
-    update copied_tables set is_updated = true
-        where name = 'account';
-
     with ids as(
         insert into resume(account_id, first_name, middle_name, last_name, min_salary,
             max_salary, currency, birth_date, is_active, foreign_id)
@@ -154,7 +148,6 @@ begin
     )
     select count(*) into inserted_rows
     from ins;
-    raise notice 'in resume: Rows copied %', inserted_rows;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='resume';
@@ -203,7 +196,6 @@ begin
     )
     select count(*) into inserted_rows
     from ins;
-    raise notice 'in company: Rows copied %', inserted_rows;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='company';
@@ -256,7 +248,6 @@ begin
     )
     select count(*) into inserted_rows
     from ins;
-    raise notice 'in vacancy: Rows copied %', inserted_rows;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='vacancy';
@@ -439,7 +430,6 @@ begin
     select count(*) into inserted_rows
     from ids;
     an_offset := an_offset + limit_num;
-    -- raise notice 'in invitatino: Rows copied (%)';
     if (an_offset > rows) then
         update copied_tables set is_copied=true
             where name ='resume_skill_set';
@@ -511,7 +501,6 @@ begin
     where is_copied=false
     ORDER BY id
     limit 1;
-    raise notice 'Table for copy %', table_for_copy;
     case table_for_copy
         when 'job_location' then
             PERFORM copy_job_location(limit_num);

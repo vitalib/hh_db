@@ -23,8 +23,8 @@ INSERT INTO outer_base.skill (skill_name)
 select * from outer_base.skill limit :limit_num;
 
 
-INSERT INTO  outer_base.job_location (street_address ,city ,state ,country, zip )
-    SELECT 'addres' || a.n, 'city' || a.n, 'state' || a.n, 'Russia', a.n
+INSERT INTO outer_base.job_location (street_address ,city ,state ,country, zip )
+    SELECT 'address' || a.n, 'city' || a.n, 'state' || a.n, 'Russia', a.n
         FROM generate_series(1, :job_location_quantity) as a(n);
 select * from outer_base.job_location limit :limit_num;
 
@@ -42,11 +42,16 @@ INSERT INTO outer_base.account(type_of_user, login, password, email, is_active,
 
 select * from outer_base.account limit :limit_num;
 
-
+WITH potential_employees AS (
+    SELECT account_id FROM outer_base.account
+        WHERE type_of_user = 'APPLICANT'
+), total_employees as (
+    SELECT count(*) as total FROM potential_employees
+)
 INSERT INTO outer_base.resume(account_id, first_name, middle_name, last_name, min_salary,
     max_salary, currency, birth_date, is_active)
     SELECT
-        (select ceil(random() * :account_quantity))::integer,
+        (SELECT account_id FROM potential_employees OFFSET floor(random()* (SELECT  * from total_employees)) LIMIT 1),
         'first_name' || a.n,
         'middle_name' || a.n,
         'last_name' || a.n,

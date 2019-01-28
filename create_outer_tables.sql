@@ -1,7 +1,9 @@
-\c hh_homework;
+-- \c hh_homework;
 DROP SCHEMA IF EXISTS outer_base CASCADE;
 CREATE SCHEMA outer_base;
 
+CREATE TYPE USER_TYPE AS ENUM ('APPLICANT', 'RECRUITER', 'HH_AGENCY');
+CREATE TYPE JOB_TYPE AS ENUM ('PART_TIME', 'FULL_TIME', 'PROJECT_OCCUPATION', 'REMOTE_JOB');
 
 -- Table: skill
 CREATE TABLE outer_base.skill (
