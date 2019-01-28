@@ -1,30 +1,47 @@
 CREATE EXTENSION pgcrypto;
+-- Table: company
+INSERT INTO company(company_name, activity_description, creation_date, company_website_url)
+    VALUES
+        ('JSC Promsvyazbank', 'Banking', '1992-01-02', 'https://www.psbank.ru'),
+        ('Company Prog', 'IT', '2005-05-23', 'https://www.companyit.ru'),
+        ('JSC New Reasearch', 'Construction', '2015-05-23', 'https://www.builders.ru'),
+        ('Tropic JSC', 'Trade, Fruits', '2008-01-23', 'https://www.tropic.ru'),
+        ('Flowers', 'Trade, Flowers', '2018-01-23', 'https://www.top_flowers.ru');
 
-INSERT INTO account (type_of_user, login, password, email, is_active,
+INSERT INTO account (company_id, type_of_user, login, password, email, is_active,
 	registration_date, last_login_date)
-		SELECT 'APPLICANT', 'newseeker' || a.n,
+		SELECT
+			null,
+			'APPLICANT',
+			'newseeker' || a.n,
     		crypt('password'|| a.n, gen_salt('bf')),
 			a.n ||'seeker@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(1, 10) as a(n);
 
-INSERT INTO account (type_of_user, login, password, email, is_active,
+
+INSERT INTO account (company_id, type_of_user, login, password, email, is_active,
 	registration_date, last_login_date)
-		SELECT 'RECRUITER', 'recruiter' || a.n,
+		SELECT
+    		(SELECT company_id FROM company OFFSET floor(random()* (SELECT  count(*) from company)) LIMIT 1),
+		    'RECRUITER', 'recruiter' || a.n,
     		crypt('password'|| a.n, gen_salt('bf')),
 			a.n ||'recruiter@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
 				FROM generate_series(10, 20) as a(n);
 
-INSERT INTO account (type_of_user, login, password, email, is_active,
+INSERT INTO account (company_id, type_of_user, login, password, email, is_active,
 	registration_date, last_login_date)
-		SELECT 'HH_AGENCY', 'newagency' || a.n,
+		SELECT
+			(SELECT company_id FROM company OFFSET floor(random()* (SELECT  count(*) from company)) LIMIT 1),
+			'HH_AGENCY', 'newagency' || a.n,
     		crypt('password'|| a.n, gen_salt('bf')),
 			a.n ||'agency@mail.ru', true,
             now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
-            now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000) FROM generate_series(20, 30) as a(n);
+            now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
+				FROM generate_series(20, 30) as a(n);
 
 
 
@@ -53,14 +70,7 @@ INSERT INTO resume(account_id, first_name, middle_name, last_name, min_salary, m
         (4, 'Nikolay', 'Vasil''evich', 'Ivanov', 30000, 45000, 'RUB', '1956-06-12', true);
 
 
--- Table: company
-INSERT INTO company(company_name, activity_description, creation_date, company_website_url)
-    VALUES
-        ('JSC Promsvyazbank', 'Banking', '1992-01-02', 'https://www.psbank.ru'),
-        ('Company Prog', 'IT', '2005-05-23', 'https://www.companyit.ru'),
-        ('JSC New Reasearch', 'Construction', '2015-05-23', 'https://www.builders.ru'),
-        ('Tropic JSC', 'Trade, Fruits', '2008-01-23', 'https://www.tropic.ru'),
-        ('Flowers', 'Trade, Flowers', '2018-01-23', 'https://www.top_flowers.ru');
+
 
 -- Table: educations
 

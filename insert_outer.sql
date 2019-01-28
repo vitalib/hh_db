@@ -28,17 +28,47 @@ INSERT INTO outer_base.job_location (street_address ,city ,state ,country, zip )
         FROM generate_series(1, :job_location_quantity) as a(n);
 select * from outer_base.job_location limit :limit_num;
 
-INSERT INTO outer_base.account(type_of_user, login, password, email, is_active,
+INSERT INTO outer_base.company (
+    company_name ,
+    activity_description,
+    creation_date,
+    company_website_url)
+SELECT
+    'company' || a.n,
+    a.n || ') this is some company description',
+    now() - '1 day':: INTERVAL * ROUND(RANDOM() * 10000 + 1000),
+    'www.company' || a.n || '.com'
+FROM generate_series(1, :company_quantity) as a(n);
+
+select * from outer_base.company limit :limit_num;
+
+-- Insertion of applicants
+INSERT INTO outer_base.account(company_id, type_of_user, login, password, email, is_active,
     registration_date, last_login_date)
     SELECT
-        (ARRAY['APPLICANT', 'RECRUITER', 'HH_AGENCY'])[ceil(random()*3)]::USER_TYPE,
+         null,
+        'APPLICANT',
         'login' || a.n,
         'password' || a.n,
         'account_email' || a.n || '@.mail.ru',
         random() > 0.2,
         now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
         now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
-            FROM generate_series(1, :account_quantity) as a(n);
+            FROM generate_series(1, :account_quantity/2) as a(n);
+
+-- Insertion of employers
+INSERT INTO outer_base.account(company_id, type_of_user, login, password, email, is_active,
+    registration_date, last_login_date)
+    SELECT
+        ceil(random() * :company_quantity),
+        (ARRAY['RECRUITER', 'HH_AGENCY'])[ceil(random()*2)]::USER_TYPE,
+        'login' || a.n,
+        'password' || a.n,
+        'account_email' || a.n || '@.mail.ru',
+        random() > 0.2,
+        now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000 + 1000),
+        now() - '1 day':: INTERVAL * ROUND(RANDOM() * 1000)
+            FROM generate_series(:account_quantity/2 + 1, :account_quantity) as a(n);
 
 select * from outer_base.account limit :limit_num;
 
@@ -65,19 +95,7 @@ select * from outer_base.resume limit :limit_num;
 
 
 
-INSERT INTO outer_base.company (
-    company_name ,
-    activity_description,
-    creation_date,
-    company_website_url)
-SELECT
-    'company' || a.n,
-    a.n || ') this is some company description',
-    now() - '1 day':: INTERVAL * ROUND(RANDOM() * 10000 + 1000),
-    'www.company' || a.n || '.com'
-FROM generate_series(1, :company_quantity) as a(n);
 
-select * from outer_base.company limit :limit_num;
 
 
 

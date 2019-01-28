@@ -22,18 +22,29 @@ CREATE TABLE outer_base.job_location (
 );
 
 
--- CREATE TYPE USER_TYPE AS ENUM ('APPLICANT', 'RECRUITER', 'HH_AGENCY');
+-- Table: company
+CREATE TABLE outer_base.company (
+    company_id serial PRIMARY KEY ,
+    company_name varchar(100)  NOT NULL,
+    activity_description varchar(1000) NOT NULL,
+    creation_date date NOT NULL,
+    company_website_url varchar(500)
+);
 
 -- Table: account
 CREATE TABLE outer_base.account (
     account_id serial PRIMARY KEY,
+    company_id integer REFERENCES outer_base.company(company_id),
     type_of_user USER_TYPE,
     login varchar(100)  NOT NULL UNIQUE,
     password varchar(100)  NOT NULL,
     email varchar(255)  NOT NULL UNIQUE,
     is_active boolean  NOT NULL,
     registration_date timestamp NOT NULL,
-    last_login_date timestamp  NOT NULL
+    last_login_date timestamp  NOT NULL,
+    foreign_id integer,
+    CHECK ((type_of_user = 'APPLICANT' AND company_id is NULL) OR
+                (type_of_user != 'APPLICANT' AND company_id is NOT NULL))
 );
 
 -- Table: resume
@@ -48,16 +59,6 @@ CREATE TABLE outer_base.resume (
     currency varchar(50),
     birth_date date NOT NULL,
     is_active boolean NOT NULL
-);
-
-
--- Table: company
-CREATE TABLE outer_base.company (
-    company_id serial PRIMARY KEY ,
-    company_name varchar(100)  NOT NULL,
-    activity_description varchar(1000) NOT NULL,
-    creation_date date NOT NULL,
-    company_website_url varchar(500)
 );
 
 -- Table: education
