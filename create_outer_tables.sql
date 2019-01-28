@@ -1,16 +1,5 @@
 \c hh_homework;
 DROP SCHEMA IF EXISTS outer_base CASCADE;
--- DROP TABLE IF EXISTS outer_base.skill;
--- DROP TABLE IF EXISTS outer_base.job_location;
--- DROP TABLE IF EXISTS outer_base.account;
--- DROP TABLE IF EXISTS outer_base.resume;
--- DROP TABLE IF EXISTS outer_base.experience_detail;
--- DROP TABLE IF EXISTS outer_base.vacancy;
--- DROP TABLE IF EXISTS outer_base.respond;
--- DROP TABLE IF EXISTS outer_base.message;
--- DROP TABLE IF EXISTS outer_base.vacancy_skill_set;
--- DROP TABLE IF EXISTS outer_base.resume_skill_set;
--- DROP SCHEMA IF EXISTS outer_base;
 CREATE SCHEMA outer_base;
 
 
@@ -125,8 +114,8 @@ CREATE TABLE outer_base.invitation (
 -- Table: respond
 CREATE TABLE outer_base.respond (
     respond_id serial,
-    vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     resume_id integer REFERENCES outer_base.resume(resume_id),
+    vacancy_id integer REFERENCES outer_base.vacancy(vacancy_id),
     apply_date timestamp NOT NULL,
     message varchar(1000),
     is_watched boolean NOT NULL ,

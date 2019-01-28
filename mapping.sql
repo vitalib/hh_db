@@ -27,20 +27,6 @@ VALUES
 ('vacancy'), ('invitation'), ('respond'), ('message'),
 ('resume_skill_set'), ('vacancy_skill_set');
 
-
-CREATE INDEX ON outer_base.invitation (invitation_id);
-CREATE INDEX ON outer_base.respond (respond_id);
-CREATE INDEX ON outer_base.message (message_id);
--- ALTER TABLE invitation DROP CONSTRAINT "invitation_resume_id_fkey";
--- ALTER TABLE invitation DROP CONSTRAINT "invitation_vacancy_id_fkey";
-
-
--- CREATE MATERIALIZED VIEW outer_base.invitation_view
--- as
--- select * from outer_base.invitation
--- order by resume_id, vacancy_id
--- with data;
-
 UPDATE copied_tables SET
     table_rows = (select count(*) from outer_base.invitation)
     where name = 'invitation';
@@ -60,3 +46,8 @@ UPDATE copied_tables SET
 UPDATE copied_tables SET
     table_rows = (select count(*) from outer_base.vacancy_skill_set)
     where name = 'vacancy_skill_set';
+
+
+CREATE INDEX ON outer_base.invitation (invitation_id);
+CREATE INDEX ON outer_base.respond (respond_id);
+CREATE INDEX ON outer_base.message (message_id);

@@ -10,7 +10,7 @@ def allDataTransfered(conn):
 
 def transferBatch(conn):
     cursor = conn.cursor()
-    results = cursor.callproc('copy', [100000,])
+    results = cursor.callproc('copy', [10000,])
     cursor.close()
     conn.commit()
 

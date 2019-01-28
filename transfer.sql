@@ -489,6 +489,7 @@ begin
     if (an_offset > rows) then
         update copied_tables set is_copied=true
             where name ='vacancy_skill_set';
+        VACUUM ANALYZE;
     else
         update copied_tables set table_offset = an_offset
             where name = 'vacancy_skill_set';
@@ -540,6 +541,3 @@ begin
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
--- DO $$ BEGIN
---     PERFORM copy(10);
--- END $$;
