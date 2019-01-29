@@ -27,8 +27,7 @@ CREATE TABLE job_location (
     city varchar(50)  NOT NULL,
     state varchar(50)  NOT NULL,
     country varchar(50)  NOT NULL,
-    zip varchar(50)  NOT NULL,
-    foreign_id integer
+    zip varchar(50)  NOT NULL
 );
 
 

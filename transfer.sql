@@ -13,25 +13,32 @@ begin
     insert into map_job_location select main.job_location_id, outerbase.job_location_id
         from job_location as main
         join outer_base.job_location as outerbase
-        using(city, state, country, zip);
+        using(street_address ,city ,state ,country, zip)
+        ;
     update copied_tables set is_updated = true
         where name = 'job_location';
     end if;
 
-    with ids as(
-        insert into job_location(street_address ,city ,state ,country, zip, foreign_id)
-            select street_address ,city ,state ,country, zip, job_location_id
-            from outer_base.job_location
+    with outer_batch as (
+        select job_location_id, street_address ,city ,state ,country, zip
+        from outer_base.job_location
+        where not exists (select * from map_job_location where job_location_id = outer_id)
+        limit limit_num
+    ), inner_batch as(
+        insert into job_location(street_address ,city ,state ,country, zip)
+            select street_address ,city ,state ,country, zip
+            from outer_batch
             where not exists (select * from map_job_location where job_location_id = outer_id)
-            limit limit_num
-        returning job_location_id, foreign_id),
-     ins as (
+            returning job_location_id, street_address ,city ,state ,country, zip
+    ), map_batch as (
         insert into map_job_location
-            select * from ids
-        returning primary_id
+            select inner_batch.job_location_id, outer_batch.job_location_id
+            from inner_batch
+            inner join outer_batch using(street_address ,city ,state ,country, zip)
+            returning *
     )
     select count(*) into inserted_rows
-    from ins;
+    from map_batch;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='job_location';
