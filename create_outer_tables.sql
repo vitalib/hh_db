@@ -1,4 +1,4 @@
--- \c hh_homework;
+\c hh_homework;
 DROP SCHEMA IF EXISTS outer_base CASCADE;
 CREATE SCHEMA outer_base;
 
@@ -41,8 +41,7 @@ CREATE TABLE outer_base.account (
     email varchar(255)  NOT NULL UNIQUE,
     is_active boolean  NOT NULL,
     registration_date timestamp NOT NULL,
-    last_login_date timestamp  NOT NULL,
-    foreign_id integer,
+    last_login_date timestamp  NOT NULL
     CHECK ((type_of_user = 'APPLICANT' AND company_id is NULL) OR
                 (type_of_user != 'APPLICANT' AND company_id is NOT NULL))
 );

@@ -1,6 +1,6 @@
-\set big_value 1000000
-\set mid_value 100000
-\set low_value 10000
+\set big_value 10000000
+\set mid_value 1000000
+\set low_value 100000
 
 \set respond_quantity :big_value
 \set resume_quantity :mid_value * 2
@@ -10,7 +10,7 @@
 \set vacancy_skill_set_quantity :mid_value
 \set resume_skill_set_quantity :mid_value
 \set skill_quantity :low_value
-\set job_location_quantity :big_value
+\set job_location_quantity :low_value
 \set account_quantity :low_value
 \set company_quantity :low_value
 \set education_quantity :low_value

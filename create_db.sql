@@ -16,8 +16,7 @@ DROP TABLE IF EXISTS resume_skill_set CASCADE;
 -- Table: skill
 CREATE TABLE skill (
     skill_id serial PRIMARY KEY,
-    skill_name varchar(50)  NOT NULL,
-    foreign_id integer
+    skill_name varchar(50)  NOT NULL
 );
 
 -- Table: job_location
@@ -39,8 +38,7 @@ CREATE TABLE company (
     company_name varchar(100)  NOT NULL,
     activity_description varchar(1000) NOT NULL,
     creation_date date NOT NULL,
-    company_website_url varchar(500),
-    foreign_id integer
+    company_website_url varchar(500)
 );
 
 -- Table: account
@@ -53,8 +51,7 @@ CREATE TABLE account (
     email varchar(255)  NOT NULL UNIQUE,
     is_active boolean  NOT NULL,
     registration_date timestamp NOT NULL,
-    last_login_date timestamp  NOT NULL,
-    foreign_id integer,
+    last_login_date timestamp  NOT NULL
     CHECK ((type_of_user = 'APPLICANT' AND company_id is NULL) OR
                 (type_of_user != 'APPLICANT' AND company_id is NOT NULL))
 );
@@ -70,8 +67,7 @@ CREATE TABLE resume (
     max_salary integer,
     currency varchar(50),
     birth_date date NOT NULL,
-    is_active boolean NOT NULL,
-    foreign_id integer
+    is_active boolean NOT NULL
 );
 
 -- Table: education
@@ -81,8 +77,7 @@ CREATE TABLE education (
     start_date date ,
     end_date date,
     description varchar(1000),
-    PRIMARY KEY(resume_id, course_name, start_date),
-    foreign_id integer
+    PRIMARY KEY(resume_id, course_name, start_date)
 );
 
 -- Table: experience_detail
@@ -113,8 +108,7 @@ CREATE TABLE vacancy (
     min_salary integer,
     max_salary integer,
     publication_time timestamp  NOT NULL,
-    expiry_time timestamp,
-    foreign_id integer
+    expiry_time timestamp
 );
 
 -- Table: invitation

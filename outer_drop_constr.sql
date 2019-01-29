@@ -14,7 +14,7 @@ ALTER TABLE outer_base."vacancy" DROP CONSTRAINT "vacancy_posted_by_id_fkey";
 ALTER TABLE outer_base."vacancy_skill_set" DROP CONSTRAINT "vacancy_skill_set_skill_id_fkey";
 ALTER TABLE outer_base."vacancy_skill_set" DROP CONSTRAINT "vacancy_skill_set_vacancy_id_fkey";
 ALTER TABLE outer_base."account" DROP CONSTRAINT "account_pkey";
-ALTER TABLE outer_base."company" DROP CONSTRAINT "company_pkey";
+ALTER TABLE outer_base."company" DROP CONSTRAINT "company_pkey" CASCADE;
 ALTER TABLE outer_base."education" DROP CONSTRAINT "education_pkey";
 ALTER TABLE outer_base."experience_detail" DROP CONSTRAINT "experience_detail_pkey";
 ALTER TABLE outer_base."invitation" DROP CONSTRAINT "invitation_resume_id_fkey";

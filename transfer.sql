@@ -28,7 +28,6 @@ begin
         insert into job_location(street_address ,city ,state ,country, zip)
             select street_address ,city ,state ,country, zip
             from outer_batch
-            where not exists (select * from map_job_location where job_location_id = outer_id)
             returning job_location_id, street_address ,city ,state ,country, zip
     ), map_batch as (
         insert into map_job_location
@@ -67,20 +66,25 @@ begin
         where name = 'skill';
     end if;
 
-    with ids as(
-        insert into skill(skill_name, foreign_id)
-            select skill_name, skill_id
-            from outer_base.skill
-            where not exists (select * from map_skill where skill_id = outer_id)
-            limit limit_num
-        returning skill_id,foreign_id),
-     ins as (
+    with outer_batch as (
+        select skill_id, skill_name
+        from outer_base.skill
+        where not exists (select * from map_skill where skill_id = outer_id)
+        limit limit_num
+    ), inner_batch as(
+        insert into skill(skill_name)
+            select skill_name
+            from outer_batch
+            returning skill_id, skill_name
+    ), map_batch as (
         insert into map_skill
-            select * from ids
-        returning primary_id
+            select inner_batch.skill_id, outer_batch.skill_id
+            from inner_batch
+            inner join outer_batch using(skill_name)
+            returning *
     )
     select count(*) into inserted_rows
-    from ins;
+    from map_batch;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='skill';
@@ -104,27 +108,34 @@ begin
     insert into map_account select main.account_id, outerbase.account_id
         from account as main
         join outer_base.account as outerbase
-        using(email);
+        using( email);
     update copied_tables set is_updated = true
         where name = 'account';
     end if;
 
-    with ids as(
-        insert into account(type_of_user, login, password, email, is_active,
-            registration_date, last_login_date, foreign_id)
-            select type_of_user, login, password, email, is_active,
-                registration_date, last_login_date, account_id
-            from outer_base.account
-            where not exists (select * from map_account where account_id = outer_id)
-            limit limit_num
-        returning account_id,foreign_id),
-     ins as (
+    with outer_batch as (
+        select account_id, map_company.primary_id as company_id, type_of_user, login, password, email, is_active,
+            registration_date, last_login_date
+        from outer_base.account
+        left join map_company on company_id = outer_id
+        where not exists (select * from map_account where account_id = outer_id)
+        limit limit_num
+    ), inner_batch as(
+        insert into account(company_id, type_of_user, login, password, email, is_active,
+            registration_date, last_login_date)
+            select company_id, type_of_user, login, password, email, is_active,
+                registration_date, last_login_date
+            from outer_batch
+            returning *
+    ), map_batch as (
         insert into map_account
-            select * from ids
-        returning primary_id
+            select inner_batch.account_id, outer_batch.account_id
+            from inner_batch
+            inner join outer_batch using(email)
+            returning *
     )
     select count(*) into inserted_rows
-    from ins;
+    from map_batch;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='account';
@@ -139,22 +150,29 @@ $BODY$
 DECLARE
     inserted_rows integer;
 begin
-    with ids as(
+    with outer_batch as (
+        select resume_id, map_account.primary_id as account_id, first_name, middle_name,
+        last_name, min_salary, max_salary, currency, birth_date, is_active
+        from outer_base.resume
+        join map_account on account_id = outer_id
+        where not exists (select * from map_resume where resume_id = outer_id)
+        limit limit_num
+    ), inner_batch as(
         insert into resume(account_id, first_name, middle_name, last_name, min_salary,
-            max_salary, currency, birth_date, is_active, foreign_id)
+            max_salary, currency, birth_date, is_active)
             select account_id, first_name, middle_name, last_name, min_salary,
-                max_salary, currency, birth_date, is_active, resume_id
-            from outer_base.resume
-            where not exists (select * from map_resume where resume_id = outer_id)
-            limit limit_num
-        returning resume_id,foreign_id),
-     ins as (
+                max_salary, currency, birth_date, is_active
+            from outer_batch
+            returning *
+    ), map_batch as (
         insert into map_resume
-            select * from ids
-        returning primary_id
+            select inner_batch.resume_id, outer_batch.resume_id
+            from inner_batch
+            inner join outer_batch using(account_id, first_name, last_name, birth_date)
+            returning *
     )
     select count(*) into inserted_rows
-    from ins;
+    from map_batch;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='resume';
@@ -178,31 +196,30 @@ begin
     insert into map_company select main.company_id, outerbase.company_id
         from company as main
         join outer_base.company as outerbase
-        using(company_website_url);
+        using(company_name, company_website_url, activity_description, creation_date);
     update copied_tables set is_updated = true
         where name = 'company';
     end if;
 
-    with ids as(
-        insert into company(company_name,
-        activity_description,
-        creation_date,
-        company_website_url, foreign_id)
-            select company_name ,
-                activity_description,
-                creation_date,
-                company_website_url, company_id
-            from outer_base.company
-                where not exists (select * from map_company where company_id = outer_id)
-            limit limit_num
-        returning company_id,foreign_id),
-     ins as (
+    with outer_batch as (
+        select company_id, company_name, activity_description, creation_date, company_website_url
+        from outer_base.company
+        where not exists (select * from map_company where company_id = outer_id)
+        limit limit_num
+    ), inner_batch as(
+        insert into company(company_name, activity_description, creation_date, company_website_url)
+            select company_name, activity_description, creation_date, company_website_url
+            from outer_batch
+            returning company_id, company_name, activity_description, creation_date, company_website_url
+    ), map_batch as (
         insert into map_company
-            select * from ids
-        returning primary_id
+            select inner_batch.company_id, outer_batch.company_id
+            from inner_batch
+            inner join outer_batch using(company_name, company_website_url, activity_description, creation_date)
+            returning *
     )
     select count(*) into inserted_rows
-    from ins;
+    from map_batch;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='company';
@@ -218,43 +235,34 @@ DECLARE
     inserted_rows integer;
     is_table_updated boolean;
 begin
-    with ids as(
-        insert into vacancy(
-        posted_by_id,
-        current_job_type,
-        company_id,
-        is_company_name_hidden,
-        job_description,
-        job_location_id,
-        is_active,
-        min_salary,
-        max_salary,
-        publication_time, foreign_id)
-            select map_account.primary_id,
-                current_job_type,
-                map_company.primary_id,
-                is_company_name_hidden,
-                job_description,
-                map_job_location.primary_id,
-                is_active,
-                min_salary,
-                max_salary,
-                publication_time,
-                vacancy_id
-            from outer_base.vacancy
-            join map_account on map_account.outer_id = posted_by_id
-            join map_company on map_company.outer_id = company_id
-            join map_job_location on map_job_location.outer_id = job_location_id
-                where not exists (select * from map_vacancy where vacancy_id = outer_id)
-            limit limit_num
-        returning vacancy_id,foreign_id),
-     ins as (
+    with outer_batch as (
+        select vacancy_id, map_account.primary_id as posted_by_id, current_job_type,
+        map_company.primary_id as company_id, is_company_name_hidden,
+        job_description, map_job_location.primary_id as job_location_id, is_active, min_salary, max_salary, publication_time, expiry_time
+        from outer_base.vacancy
+        join map_account on posted_by_id = map_account.outer_id
+        join map_company on company_id = map_company.outer_id
+        join map_job_location on job_location_id = map_job_location.outer_id
+        where not exists (select * from map_vacancy where vacancy_id = outer_id)
+        limit limit_num
+    ), inner_batch as(
+        insert into vacancy(posted_by_id, current_job_type, company_id,
+        is_company_name_hidden, job_description, job_location_id,
+        is_active, min_salary, max_salary, publication_time, expiry_time)
+            select posted_by_id, current_job_type, company_id,
+            is_company_name_hidden, job_description, job_location_id,
+            is_active, min_salary, max_salary, publication_time, expiry_time
+            from outer_batch
+            returning *
+    ), map_batch as (
         insert into map_vacancy
-            select * from ids
-        returning primary_id
+            select inner_batch.vacancy_id, outer_batch.vacancy_id
+            from inner_batch
+            inner join outer_batch using(posted_by_id, company_id, job_description)
+            returning *
     )
     select count(*) into inserted_rows
-    from ins;
+    from map_batch;
     if (inserted_rows < limit_num) then
         update copied_tables set is_copied=true
             where name ='vacancy';
@@ -486,7 +494,6 @@ begin
     if (an_offset > rows) then
         update copied_tables set is_copied=true
             where name ='vacancy_skill_set';
-        VACUUM ANALYZE;
     else
         update copied_tables set table_offset = an_offset
             where name = 'vacancy_skill_set';

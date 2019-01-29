@@ -23,7 +23,7 @@ CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAUL
 
 INSERT INTO copied_tables (name)
 VALUES
-('job_location'), ('skill'), ('account'), ('resume'), ('company'),
+('job_location'), ('skill'), ('company'), ('account'), ('resume'), 
 ('vacancy'), ('invitation'), ('respond'), ('message'),
 ('resume_skill_set'), ('vacancy_skill_set');
 
