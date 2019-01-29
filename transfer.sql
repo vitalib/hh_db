@@ -8,7 +8,7 @@ begin
     with outer_batch as (
         select job_location_id, street_address ,city ,state ,country, zip
         from outer_base.job_location
-        where not exists (select * from map_job_location where job_location_id = outer_id)
+        where not exists (select 1 from map_job_location where job_location_id = outer_id)
         limit limit_num
     ), inner_batch as(
         insert into job_location(street_address ,city ,state ,country, zip)
@@ -16,7 +16,7 @@ begin
             from outer_batch
             returning job_location_id, street_address ,city ,state ,country, zip
     ), map_batch as (
-        insert into map_job_location
+        insert into map_job_location(primary_id, outer_id)
             select inner_batch.job_location_id, outer_batch.job_location_id
             from inner_batch
             inner join outer_batch using(street_address ,city ,state ,country, zip)
@@ -44,7 +44,8 @@ begin
         from copied_tables
             where name = 'skill';
     if (is_table_updated = false) then
-    insert into map_skill select main.skill_id, outerbase.skill_id
+    CREATE INDEX skill_idx ON outer_base.skill(skill_name, skill_id);
+    insert into map_skill(primary_id, outer_id) select main.skill_id, outerbase.skill_id
         from skill as main
         join outer_base.skill as outerbase
         using(skill_name);
@@ -55,7 +56,7 @@ begin
     with outer_batch as (
         select skill_id, skill_name
         from outer_base.skill
-        where not exists (select * from map_skill where skill_id = outer_id)
+        where not exists (select 1 from map_skill where skill_id = outer_id)
         limit limit_num
     ), inner_batch as(
         insert into skill(skill_name)
@@ -63,7 +64,7 @@ begin
             from outer_batch
             returning skill_id, skill_name
     ), map_batch as (
-        insert into map_skill
+        insert into map_skill(primary_id, outer_id)
             select inner_batch.skill_id, outer_batch.skill_id
             from inner_batch
             inner join outer_batch using(skill_name)
@@ -72,6 +73,7 @@ begin
     select count(*) into inserted_rows
     from map_batch;
     if (inserted_rows < limit_num) then
+        DROP INDEX outer_base.skill_idx;
         update copied_tables set is_copied=true
             where name ='skill';
     end if;
@@ -91,7 +93,8 @@ begin
         from copied_tables
             where name = 'account';
     if (is_table_updated = false) then
-    insert into map_account select main.account_id, outerbase.account_id
+    CREATE INDEX account_idx ON outer_base.account(account_id, email);
+    insert into map_account(primary_id, outer_id) select main.account_id, outerbase.account_id
         from account as main
         join outer_base.account as outerbase
         using( email);
@@ -104,7 +107,7 @@ begin
             registration_date, last_login_date
         from outer_base.account
         left join map_company on company_id = outer_id
-        where not exists (select * from map_account where account_id = outer_id)
+        where not exists (select 1 from map_account where account_id = outer_id)
         limit limit_num
     ), inner_batch as(
         insert into account(company_id, type_of_user, login, password, email, is_active,
@@ -114,7 +117,7 @@ begin
             from outer_batch
             returning *
     ), map_batch as (
-        insert into map_account
+        insert into map_account(primary_id, outer_id)
             select inner_batch.account_id, outer_batch.account_id
             from inner_batch
             inner join outer_batch using(email)
@@ -123,6 +126,7 @@ begin
     select count(*) into inserted_rows
     from map_batch;
     if (inserted_rows < limit_num) then
+        DROP INDEX outer_base.account_idx;
         update copied_tables set is_copied=true
             where name ='account';
     end if;
@@ -135,13 +139,13 @@ RETURNS void AS
 $BODY$
 DECLARE
     inserted_rows integer;
-begin
-    with outer_batch as (
+begin   
+        with outer_batch as (
         select resume_id, map_account.primary_id as account_id, first_name, middle_name,
         last_name, min_salary, max_salary, currency, birth_date, is_active
         from outer_base.resume
         join map_account on account_id = outer_id
-        where not exists (select * from map_resume where resume_id = outer_id)
+        where not exists (select 1 from map_resume where resume_id = outer_id)
         limit limit_num
     ), inner_batch as(
         insert into resume(account_id, first_name, middle_name, last_name, min_salary,
@@ -151,7 +155,7 @@ begin
             from outer_batch
             returning *
     ), map_batch as (
-        insert into map_resume
+        insert into map_resume(primary_id, outer_id)
             select inner_batch.resume_id, outer_batch.resume_id
             from inner_batch
             inner join outer_batch using(account_id, first_name, last_name, birth_date)
@@ -179,10 +183,12 @@ begin
         from copied_tables
             where name = 'company';
     if (is_table_updated = false) then
-    insert into map_company select main.company_id, outerbase.company_id
+    CREATE INDEX company_idx ON outer_base.company(company_id, company_name, creation_date);
+    insert into map_company(primary_id, outer_id)
+        select main.company_id, outerbase.company_id
         from company as main
         join outer_base.company as outerbase
-        using(company_name, company_website_url, activity_description, creation_date);
+        using(company_name, creation_date);
     update copied_tables set is_updated = true
         where name = 'company';
     end if;
@@ -190,7 +196,7 @@ begin
     with outer_batch as (
         select company_id, company_name, activity_description, creation_date, company_website_url
         from outer_base.company
-        where not exists (select * from map_company where company_id = outer_id)
+        where not exists (select 1 from map_company where company_id = outer_id)
         limit limit_num
     ), inner_batch as(
         insert into company(company_name, activity_description, creation_date, company_website_url)
@@ -198,15 +204,16 @@ begin
             from outer_batch
             returning company_id, company_name, activity_description, creation_date, company_website_url
     ), map_batch as (
-        insert into map_company
+        insert into map_company(primary_id, outer_id)
             select inner_batch.company_id, outer_batch.company_id
             from inner_batch
-            inner join outer_batch using(company_name, company_website_url, activity_description, creation_date)
+            inner join outer_batch using(company_name, creation_date)
             returning *
     )
     select count(*) into inserted_rows
     from map_batch;
     if (inserted_rows < limit_num) then
+        DROP INDEX outer_base.company_idx;
         update copied_tables set is_copied=true
             where name ='company';
     end if;
@@ -229,7 +236,7 @@ begin
         join map_account on posted_by_id = map_account.outer_id
         join map_company on company_id = map_company.outer_id
         join map_job_location on job_location_id = map_job_location.outer_id
-        where not exists (select * from map_vacancy where vacancy_id = outer_id)
+        where not exists (select 1 from map_vacancy where vacancy_id = outer_id)
         limit limit_num
     ), inner_batch as(
         insert into vacancy(posted_by_id, current_job_type, company_id,
@@ -241,8 +248,8 @@ begin
             from outer_batch
             returning *
     ), map_batch as (
-        insert into map_vacancy
-            select inner_batch.vacancy_id, outer_batch.vacancy_id
+        insert into map_vacancy(primary_id, outer_id)
+            select inner_batch.vacancy_id , outer_batch.vacancy_id
             from inner_batch
             inner join outer_batch using(posted_by_id, company_id, job_description)
             returning *
