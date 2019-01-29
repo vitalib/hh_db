@@ -81,7 +81,7 @@ WITH potential_employees AS (
 INSERT INTO outer_base.resume(account_id, first_name, middle_name, last_name, min_salary,
     max_salary, currency, birth_date, is_active)
     SELECT
-        (SELECT account_id FROM potential_employees OFFSET floor(random()* (SELECT  * from total_employees)) LIMIT 1),
+        (SELECT account_id FROM potential_employees ORDER BY RANDOM() LIMIT 1),
         'first_name' || a.n,
         'middle_name' || a.n,
         'last_name' || a.n,

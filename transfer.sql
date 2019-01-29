@@ -5,20 +5,6 @@ DECLARE
     inserted_rows integer;
     is_table_updated boolean;
 begin
-    select is_updated
-    into is_table_updated
-        from copied_tables
-            where name = 'job_location';
-    if (is_table_updated = false) then
-    insert into map_job_location select main.job_location_id, outerbase.job_location_id
-        from job_location as main
-        join outer_base.job_location as outerbase
-        using(street_address ,city ,state ,country, zip)
-        ;
-    update copied_tables set is_updated = true
-        where name = 'job_location';
-    end if;
-
     with outer_batch as (
         select job_location_id, street_address ,city ,state ,country, zip
         from outer_base.job_location
