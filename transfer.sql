@@ -20,7 +20,7 @@ begin
             select inner_batch.job_location_id, outer_batch.job_location_id
             from inner_batch
             inner join outer_batch using(street_address ,city ,state ,country, zip)
-            returning *
+            returning primary_id
     )
     select count(*) into inserted_rows
     from map_batch;
@@ -68,7 +68,7 @@ begin
             select inner_batch.skill_id, outer_batch.skill_id
             from inner_batch
             inner join outer_batch using(skill_name)
-            returning *
+            returning primary_id
     )
     select count(*) into inserted_rows
     from map_batch;
@@ -114,13 +114,13 @@ begin
             select company_id, type_of_user, login, password, email, is_active,
                 registration_date, last_login_date
             from outer_batch
-            returning *
+            returning account_id, email
     ), map_batch as (
         insert into map_account(primary_id, outer_id)
             select inner_batch.account_id, outer_batch.account_id
             from inner_batch
             inner join outer_batch using(email)
-            returning *
+            returning primary_id
     )
     select count(*) into inserted_rows
     from map_batch;
@@ -152,13 +152,13 @@ begin
             select account_id, first_name, middle_name, last_name, min_salary,
                 max_salary, currency, birth_date, is_active
             from outer_batch
-            returning *
+            returning resume_id, account_id, first_name, last_name, birth_date
     ), map_batch as (
         insert into map_resume(primary_id, outer_id)
             select inner_batch.resume_id, outer_batch.resume_id
             from inner_batch
             inner join outer_batch using(account_id, first_name, last_name, birth_date)
-            returning *
+            returning primary_id
     )
     select count(*) into inserted_rows
     from map_batch;
@@ -200,13 +200,13 @@ begin
         insert into company(company_name, activity_description, creation_date, company_website_url)
             select company_name, activity_description, creation_date, company_website_url
             from outer_batch
-            returning company_id, company_name, activity_description, creation_date, company_website_url
+            returning company_id, company_name, creation_date
     ), map_batch as (
         insert into map_company(primary_id, outer_id)
             select inner_batch.company_id, outer_batch.company_id
             from inner_batch
             inner join outer_batch using(company_name, creation_date)
-            returning *
+            returning primary_id
     )
     select count(*) into inserted_rows
     from map_batch;
@@ -244,13 +244,13 @@ begin
             is_company_name_hidden, job_description, job_location_id,
             is_active, min_salary, max_salary, publication_time, expiry_time
             from outer_batch
-            returning *
+            returning vacancy_id, posted_by_id, company_id, job_description
     ), map_batch as (
         insert into map_vacancy(primary_id, outer_id)
             select inner_batch.vacancy_id , outer_batch.vacancy_id
             from inner_batch
             inner join outer_batch using(posted_by_id, company_id, job_description)
-            returning *
+            returning primary_id
     )
     select count(*) into inserted_rows
     from map_batch;
