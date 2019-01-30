@@ -52,6 +52,6 @@ CREATE INDEX ON outer_base.invitation (invitation_id);
 CREATE INDEX ON outer_base.respond (respond_id);
 CREATE INDEX ON outer_base.message (message_id);
 
-CREATE INDEX CONCURRENTLY skill_idx  ON outer_base.skill(skill_name, skill_id);
-CREATE INDEX CONCURRENTLY account_idx ON outer_base.account(account_id, email);
-CREATE INDEX CONCURRENTLY company_idx ON outer_base.company(company_id, company_name, creation_date);
+CREATE INDEX skill_idx ON outer_base.skill(skill_name, skill_id);
+CREATE INDEX account_idx ON outer_base.account(account_id, email);
+CREATE INDEX company_idx ON outer_base.company(company_id, company_name, creation_date);

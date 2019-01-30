@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION copy_job_location(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     inserted_rows integer;
@@ -24,35 +24,31 @@ begin
     )
     select count(*) into inserted_rows
     from map_batch;
-    if (inserted_rows < limit_num) then
-        update copied_tables set is_copied=true
-            where name ='job_location';
-    end if;
+    RETURN inserted_rows;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION map_equal_skill(limit_num int)
+RETURNS integer AS
+$BODY$
+BEGIN
+    insert into map_skill(primary_id, outer_id) select main.skill_id, outerbase.skill_id
+    from skill as main
+    join outer_base.skill as outerbase
+    using(skill_name);
+    DROP INDEX outer_base.skill_idx;
+RETURN 0;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION copy_skill(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     inserted_rows integer;
-    is_table_updated boolean;
 begin
-    select is_updated
-    into is_table_updated
-        from copied_tables
-            where name = 'skill';
-    if (is_table_updated = false) then
-
-    insert into map_skill(primary_id, outer_id) select main.skill_id, outerbase.skill_id
-        from skill as main
-        join outer_base.skill as outerbase
-        using(skill_name);
-    update copied_tables set is_updated = true
-        where name = 'skill';
-    end if;
-
     with outer_batch as (
         select skill_id, skill_name
         from outer_base.skill
@@ -72,35 +68,33 @@ begin
     )
     select count(*) into inserted_rows
     from map_batch;
-    if (inserted_rows < limit_num) then
-        DROP INDEX outer_base.skill_idx;
-        update copied_tables set is_copied=true
-            where name ='skill';
-    end if;
+    RETURN inserted_rows;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+
+CREATE OR REPLACE FUNCTION map_equal_account(limit_num int)
+RETURNS integer AS
+$BODY$
+BEGIN
+    insert into map_account(primary_id, outer_id) select main.account_id, outerbase.account_id
+    from account as main
+    join outer_base.account as outerbase
+    using(email);
+    DROP INDEX outer_base.account_idx;
+RETURN 0;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+
 CREATE OR REPLACE FUNCTION copy_account(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     inserted_rows integer;
-    is_table_updated boolean;
 begin
-    select is_updated
-    into is_table_updated
-        from copied_tables
-            where name = 'account';
-    if (is_table_updated = false) then
-    insert into map_account(primary_id, outer_id) select main.account_id, outerbase.account_id
-        from account as main
-        join outer_base.account as outerbase
-        using( email);
-    update copied_tables set is_updated = true
-        where name = 'account';
-    end if;
-
     with outer_batch as (
         select account_id, map_company.primary_id as company_id, type_of_user, login, password, email, is_active,
             registration_date, last_login_date
@@ -124,17 +118,13 @@ begin
     )
     select count(*) into inserted_rows
     from map_batch;
-    if (inserted_rows < limit_num) then
-        DROP INDEX outer_base.account_idx;
-        update copied_tables set is_copied=true
-            where name ='account';
-    end if;
+    RETURN inserted_rows;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION copy_resume(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     inserted_rows integer;
@@ -162,35 +152,34 @@ begin
     )
     select count(*) into inserted_rows
     from map_batch;
-    if (inserted_rows < limit_num) then
-        update copied_tables set is_copied=true
-            where name ='resume';
-    end if;
+    RETURN inserted_rows;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+
+CREATE OR REPLACE FUNCTION map_equal_company(limit_num int)
+RETURNS integer AS
+$BODY$
+BEGIN
+    insert into map_company(primary_id, outer_id)
+    select main.company_id, outerbase.company_id
+    from company as main
+    join outer_base.company as outerbase
+    using(company_name, creation_date);
+    DROP INDEX outer_base.company_idx;
+RETURN 0;
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+
 CREATE OR REPLACE FUNCTION copy_company(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     inserted_rows integer;
-    is_table_updated boolean;
 begin
-    select is_updated
-    into is_table_updated
-        from copied_tables
-            where name = 'company';
-    if (is_table_updated = false) then
-    insert into map_company(primary_id, outer_id)
-        select main.company_id, outerbase.company_id
-        from company as main
-        join outer_base.company as outerbase
-        using(company_name, creation_date);
-    update copied_tables set is_updated = true
-        where name = 'company';
-    end if;
-
     with outer_batch as (
         select company_id, company_name, activity_description, creation_date, company_website_url
         from outer_base.company
@@ -210,17 +199,13 @@ begin
     )
     select count(*) into inserted_rows
     from map_batch;
-    if (inserted_rows < limit_num) then
-        DROP INDEX outer_base.company_idx;
-        update copied_tables set is_copied=true
-            where name ='company';
-    end if;
+    RETURN inserted_rows;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION copy_vacancy(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     inserted_rows integer;
@@ -254,16 +239,13 @@ begin
     )
     select count(*) into inserted_rows
     from map_batch;
-    if (inserted_rows < limit_num) then
-        update copied_tables set is_copied=true
-            where name ='vacancy';
-    end if;
+    RETURN inserted_rows;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION copy_invitation(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     an_offset integer;
@@ -292,20 +274,16 @@ begin
     join map_vacancy on map_vacancy.outer_id = vacancy_id
     on conflict do nothing;
     an_offset := an_offset + limit_num;
-    if (an_offset > rows) then
-        update copied_tables set is_copied=true
-            where name ='invitation';
-    else
-        update copied_tables set table_offset = an_offset
-            where name = 'invitation';
-    end if;
+    update copied_tables set table_offset = an_offset
+        where name = 'invitation';
+    RETURN rows - an_offset;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 
 CREATE OR REPLACE FUNCTION copy_respond(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     an_offset integer;
@@ -333,19 +311,15 @@ begin
     join map_vacancy on map_vacancy.outer_id = vacancy_id
     on conflict do nothing;
     an_offset := an_offset + limit_num;
-    if (an_offset > rows) then
-        update copied_tables set is_copied=true
-            where name ='respond';
-    else
-        update copied_tables set table_offset = an_offset
-            where name = 'respond';
-    end if;
+    update copied_tables set table_offset = an_offset
+        where name = 'respond';
+    RETURN rows - an_offset;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION copy_message(limit_num int)
-RETURNS void AS
+RETURNS integer AS
 $BODY$
 DECLARE
     an_offset integer;
@@ -373,13 +347,9 @@ begin
     join map_vacancy on map_vacancy.outer_id = vacancy_id
     on conflict do nothing;
     an_offset := an_offset + limit_num;
-    if (an_offset > rows) then
-        update copied_tables set is_copied=true
-            where name ='message';
-    else
-        update copied_tables set table_offset = an_offset
-            where name = 'message';
-    end if;
+    update copied_tables set table_offset = an_offset
+        where name = 'message';
+    RETURN rows - an_offset;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -391,7 +361,6 @@ DECLARE
     an_offset integer;
     rows integer;
     is_table_updated boolean;
-    inserted_rows integer;
 begin
     select table_offset
         into an_offset
@@ -401,7 +370,7 @@ begin
         into rows
             from copied_tables
                 where name='resume_skill_set';
-    with ids as(
+
     insert into resume_skill_set(
         resume_id, skill_id, skill_level)
         select
@@ -413,19 +382,11 @@ begin
         join map_resume on map_resume.outer_id = resume_id
         order by map_resume.primary_id, map_skill.primary_id
         limit limit_num offset an_offset
-        on conflict do nothing
-        returning resume_id)
-    select count(*) into inserted_rows
-    from ids;
+        on conflict do nothing;
     an_offset := an_offset + limit_num;
-    if (an_offset > rows) then
-        update copied_tables set is_copied=true
-            where name ='resume_skill_set';
-    else
-        update copied_tables set table_offset = an_offset
-            where name = 'resume_skill_set';
-    end if;
-    return inserted_rows;
+    update copied_tables set table_offset = an_offset
+        where name = 'resume_skill_set';
+    return rows - an_offset;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -437,7 +398,6 @@ DECLARE
     an_offset integer;
     rows integer;
     is_table_updated boolean;
-    inserted_rows integer;
 begin
     select table_offset
         into an_offset
@@ -447,7 +407,7 @@ begin
         into rows
             from copied_tables
                 where name='vacancy_skill_set';
-    with ids as(
+
     insert into vacancy_skill_set(
         skill_id, vacancy_id, skill_level)
         select
@@ -459,61 +419,11 @@ begin
         join map_vacancy on map_vacancy.outer_id = vacancy_id
         order by map_vacancy.primary_id, map_skill.primary_id
         limit limit_num offset an_offset
-        on conflict do nothing
-        returning vacancy_id)
-    select count(*) into inserted_rows
-    from ids;
+        on conflict do nothing;
     an_offset := an_offset + limit_num;
-    if (an_offset > rows) then
-        update copied_tables set is_copied=true
-            where name ='vacancy_skill_set';
-    else
-        update copied_tables set table_offset = an_offset
-            where name = 'vacancy_skill_set';
-    end if;
-    return inserted_rows;
-end;
-$BODY$
-LANGUAGE plpgsql VOLATILE;
-
-CREATE OR REPLACE FUNCTION copy(limit_num int)
-RETURNS void AS
-$BODY$
-DECLARE
-    table_for_copy varchar(20);
-begin
-    select copied_tables.name
-        INTO table_for_copy
-    from copied_tables
-    where is_copied=false
-    ORDER BY id
-    limit 1;
-    case table_for_copy
-        when 'job_location' then
-            PERFORM copy_job_location(limit_num);
-        when 'skill' then
-            PERFORM copy_skill(limit_num);
-        when 'account' then
-            PERFORM copy_account(limit_num);
-        when 'resume' then
-            PERFORM copy_resume(limit_num);
-        when 'company' then
-            PERFORM copy_company(limit_num);
-        when 'vacancy' then
-            PERFORM copy_vacancy(limit_num);
-        when 'invitation' then
-            PERFORM copy_invitation(limit_num);
-        when 'respond' then
-            PERFORM copy_respond(limit_num);
-        when 'message' then
-            PERFORM copy_message(limit_num);
-        when 'resume_skill_set' then
-            PERFORM copy_resume_skill_set(limit_num);
-        when 'vacancy_skill_set' then
-            PERFORM copy_vacancy_skill_set(limit_num);
-        else
-            table_for_copy := 'Error table';
-    end case;
+    update copied_tables set table_offset = an_offset
+        where name = 'vacancy_skill_set';
+    return rows - an_offset;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;

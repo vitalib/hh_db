@@ -1,6 +1,6 @@
-\set big_value 10000
-\set mid_value 1000
-\set low_value 100
+\set big_value 10000000
+\set mid_value 1000000
+\set low_value 100000
 
 \set respond_quantity :big_value
 \set resume_quantity :mid_value * 2
