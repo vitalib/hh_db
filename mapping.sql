@@ -23,7 +23,7 @@ CREATE TABLE copied_tables(id SERIAL, name varchar(20), is_copied boolean DEFAUL
 
 INSERT INTO copied_tables (name)
 VALUES
-('job_location'), ('skill'), ('company'), ('account'), ('resume'), 
+('job_location'), ('skill'), ('company'), ('account'), ('resume'),
 ('vacancy'), ('invitation'), ('respond'), ('message'),
 ('resume_skill_set'), ('vacancy_skill_set');
 
@@ -51,3 +51,7 @@ UPDATE copied_tables SET
 CREATE INDEX ON outer_base.invitation (invitation_id);
 CREATE INDEX ON outer_base.respond (respond_id);
 CREATE INDEX ON outer_base.message (message_id);
+
+CREATE INDEX CONCURRENTLY skill_idx  ON outer_base.skill(skill_name, skill_id);
+CREATE INDEX CONCURRENTLY account_idx ON outer_base.account(account_id, email);
+CREATE INDEX CONCURRENTLY company_idx ON outer_base.company(company_id, company_name, creation_date);

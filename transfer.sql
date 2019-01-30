@@ -44,7 +44,7 @@ begin
         from copied_tables
             where name = 'skill';
     if (is_table_updated = false) then
-    CREATE INDEX skill_idx ON outer_base.skill(skill_name, skill_id);
+
     insert into map_skill(primary_id, outer_id) select main.skill_id, outerbase.skill_id
         from skill as main
         join outer_base.skill as outerbase
@@ -93,7 +93,6 @@ begin
         from copied_tables
             where name = 'account';
     if (is_table_updated = false) then
-    CREATE INDEX account_idx ON outer_base.account(account_id, email);
     insert into map_account(primary_id, outer_id) select main.account_id, outerbase.account_id
         from account as main
         join outer_base.account as outerbase
@@ -139,7 +138,7 @@ RETURNS void AS
 $BODY$
 DECLARE
     inserted_rows integer;
-begin   
+begin
         with outer_batch as (
         select resume_id, map_account.primary_id as account_id, first_name, middle_name,
         last_name, min_salary, max_salary, currency, birth_date, is_active
@@ -183,7 +182,6 @@ begin
         from copied_tables
             where name = 'company';
     if (is_table_updated = false) then
-    CREATE INDEX company_idx ON outer_base.company(company_id, company_name, creation_date);
     insert into map_company(primary_id, outer_id)
         select main.company_id, outerbase.company_id
         from company as main
@@ -271,8 +269,6 @@ DECLARE
     an_offset integer;
     rows integer;
 begin
-ALTER TABLE invitation DROP CONSTRAINT "invitation_resume_id_fkey";
-ALTER TABLE invitation DROP CONSTRAINT "invitation_vacancy_id_fkey";
     select table_offset
         into an_offset
             from copied_tables
@@ -303,10 +299,6 @@ ALTER TABLE invitation DROP CONSTRAINT "invitation_vacancy_id_fkey";
         update copied_tables set table_offset = an_offset
             where name = 'invitation';
     end if;
-    ALTER TABLE invitation ADD CONSTRAINT "invitation_resume_id_fkey" FOREIGN KEY (resume_id)
-    REFERENCES resume(resume_id);
-    ALTER TABLE invitation ADD CONSTRAINT "invitation_vacancy_id_fkey" FOREIGN KEY (vacancy_id)
-    REFERENCES vacancy(vacancy_id);
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -319,8 +311,6 @@ DECLARE
     an_offset integer;
     rows integer;
 begin
-ALTER TABLE respond DROP CONSTRAINT "respond_resume_id_fkey";
-ALTER TABLE respond DROP CONSTRAINT "respond_vacancy_id_fkey";
     select table_offset
         into an_offset
             from copied_tables
@@ -350,10 +340,6 @@ ALTER TABLE respond DROP CONSTRAINT "respond_vacancy_id_fkey";
         update copied_tables set table_offset = an_offset
             where name = 'respond';
     end if;
-    ALTER TABLE respond ADD CONSTRAINT "respond_resume_id_fkey" FOREIGN KEY (resume_id)
-    REFERENCES resume(resume_id);
-    ALTER TABLE respond ADD CONSTRAINT "respond_vacancy_id_fkey" FOREIGN KEY (vacancy_id)
-    REFERENCES vacancy(vacancy_id);
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -365,8 +351,6 @@ DECLARE
     an_offset integer;
     rows integer;
 begin
-ALTER TABLE message DROP CONSTRAINT "message_resume_id_fkey";
-ALTER TABLE message DROP CONSTRAINT "message_vacancy_id_fkey";
     select table_offset
         into an_offset
             from copied_tables
@@ -396,10 +380,6 @@ ALTER TABLE message DROP CONSTRAINT "message_vacancy_id_fkey";
         update copied_tables set table_offset = an_offset
             where name = 'message';
     end if;
-    ALTER TABLE message ADD CONSTRAINT "message_resume_id_fkey" FOREIGN KEY (resume_id)
-    REFERENCES resume(resume_id);
-    ALTER TABLE message ADD CONSTRAINT "message_vacancy_id_fkey" FOREIGN KEY (vacancy_id)
-    REFERENCES vacancy(vacancy_id);
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
