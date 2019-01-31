@@ -7,9 +7,9 @@
 \set vacancy_quantity :mid_value
 \set invitation_quantity :big_value
 \set message_quantity :big_value
-\set vacancy_skill_set_quantity :mid_value
-\set resume_skill_set_quantity :mid_value
-\set skill_quantity :low_value
+\set vacancy_skill_set_quantity :mid_value * 4
+\set resume_skill_set_quantity :mid_value * 5
+\set skill_quantity 300
 \set job_location_quantity :low_value
 \set account_quantity :low_value
 \set company_quantity :low_value

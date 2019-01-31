@@ -79,7 +79,6 @@ EXPLAIN ANALYZE SELECT vacancy_id, vacancy.job_description, vacancy.current_job_
     JOIN company USING(company_id)
     WHERE vacancy.is_active = true
         AND lower(vacancy.job_description) LIKE '%letter of credit%';
-
 --  Gather  (cost=1000.29..22787.46 rows=80 width=55) (actual time=753.763..759.419
 --  rows=1 loops=1)
 --    Workers Planned: 2
@@ -97,9 +96,36 @@ EXPLAIN ANALYZE SELECT vacancy_id, vacancy.job_description, vacancy.current_job_
 --  Planning time: 1.228 ms
 --  Execution time: 759.502 ms
 -- (11 rows)
--- Улучшить данный запрос, видимо, не представляется возможным. Это связано с
--- наличием условия LIKE '%letter of credit%', которое вынуждает выполнять
--- запрос sequnce scan-ом.
+-- Попытаемся улучшить выполнение запроса путем создания индекса GIN
+-- на поле job_description
+CREATE INDEX vacancy_jd_idx ON vacancy USING GIN (to_tsvector('english', job_description));
+-- Откорректируем соответствущим образом текст запроса
+SELECT vacancy_id, vacancy.job_description, vacancy.current_job_type, vacancy.max_salary, company.company_name
+   FROM vacancy
+   JOIN company USING(company_id)
+   WHERE vacancy.is_active = true
+       AND to_tsvector('english', job_description) @@ plainto_tsquery('english', 'letter of credit');
+ --   Nested Loop  (cost=36.74..312.31 rows=20 width=55) (actual time=0.212..0.213 rows=1 l
+ --  oops=1)
+ --  Nested Loop  (cost=36.49..305.81 rows=20 width=55) (actual time=0.130..0.131 rows=1 l
+ -- oops=1)
+--    ->  Bitmap Heap Scan on vacancy  (cost=36.19..139.61 rows=20 width=47) (actual time
+-- =0.120..0.120 rows=1 loops=1)
+--          Recheck Cond: (to_tsvector('english'::regconfig, (job_description)::text) @@
+-- '''letter'' & ''credit'''::tsquery)
+--          Filter: is_active
+--          Heap Blocks: exact=1
+--          ->  Bitmap Index Scan on vacancy_jd_idx  (cost=0.00..36.19 rows=25 width=0) (
+-- actual time=0.096..0.096 rows=1 loops=1)
+--                Index Cond: (to_tsvector('english'::regconfig, (job_description)::text)
+--  @@ '''letter'' & ''credit'''::tsquery)
+--    ->  Index Scan using company_pkey on company  (cost=0.29..8.31 rows=1 width=16) (ac
+-- tual time=0.007..0.007 rows=1 loops=1)
+--          Index Cond: (company_id = vacancy.company_id)
+--  Planning time: 0.409 ms
+--  Execution time: 0.172 ms
+-- (11 rows)
+-- Запрос значательно улучшился
 
 
 -- I want to get some more information about skill required
@@ -211,19 +237,28 @@ EXPLAIN ANALYZE SELECT inv.resume_id, inv.vacancy_id, inv.is_watched
 --  Planning time: 1.563 ms
 --  Execution time: 5621.159 ms
 -- (12 rows)
--- Очень неэффективный запрос, и, видимо, некорректный запрос.
--- Перепишем запрос:
-EXPLAIN ANALYZE SELECT inv.is_watched, inv.meeting_time
-    FROM invitation inv
-    where inv.resume_id = 100006 AND inv.vacancy_id = 2;
---     Index Scan using invitation_pkey on invitation inv  (cost=0.43..8.46 rows=1 wid
--- th=9) (actual time=0.886..0.886 rows=0 loops=1)
---   Index Cond: ((resume_id = 100006) AND (vacancy_id = 2))
--- Planning time: 0.285 ms
--- Execution time: 0.944 ms
--- (4 rows)
--- Запрос выполнен эффективно.
-
+-- Запрос не эффективен. Добавим индекс на поле meeting_time
+CREATE INDEX inv_mt_idx ON ivitation(meeting_time);
+-- Результат значительно улучшился
+-- Bitmap Heap Scan on invitation inv  (cost=190.38..30263.63 rows=9990 width=9) (actual
+-- time=5.291..314.590 rows=4964 loops=1)
+--   Recheck Cond: (meeting_time = $1)
+--   Heap Blocks: exact=4854
+--   InitPlan 2 (returns $1)
+--     ->  Result  (cost=0.51..0.52 rows=1 width=8) (actual time=0.141..0.142 rows=1 loo
+-- ps=1)
+--           InitPlan 1 (returns $0)
+--             ->  Limit  (cost=0.43..0.51 rows=1 width=8) (actual time=0.134..0.136 row
+-- s=1 loops=1)
+--                   ->  Index Only Scan Backward using inv_mt_idx on invitation  (cost=
+-- 0.43..739226.83 rows=9999983 width=8) (actual time=0.132..0.132 rows=1 loops=1)
+--                         Index Cond: (meeting_time IS NOT NULL)
+--                         Heap Fetches: 1
+--   ->  Bitmap Index Scan on inv_mt_idx  (cost=0.00..187.36 rows=9990 width=0) (actual
+-- time=2.778..2.778 rows=4964 loops=1)
+--         Index Cond: (meeting_time = $1)
+-- Planning time: 0.434 ms
+-- Execution time: 315.444 ms
 
 -- I have accepted invitation
 UPDATE respond
@@ -271,36 +306,75 @@ EXPLAIN ANALYZE SELECT vacancy.vacancy_id, company.company_name, vacancy_skill_s
     JOIN company USING (company_id)
     JOIN vacancy_skill_set USING(vacancy_id)
     JOIN resume_skill_set USING (skill_id)
-        WHERE resume_skill_set.resume_id = 100006
-        AND vacancy.max_salary >= 60000
-        AND vacancy.min_salary >= 40000
+        WHERE resume_skill_set.resume_id = 100005
+        AND vacancy.max_salary < 600000
+        AND vacancy.min_salary >= 20000
         AND vacancy.is_active = true;
---  Nested Loop  (cost=1.57..22.75 rows=1 width=20) (actual time=0.603..0.603 rows=
--- 0 loops=1)
---    ->  Nested Loop  (cost=1.27..14.89 rows=1 width=12) (actual time=0.602..0.602
---  rows=0 loops=1)
---          ->  Nested Loop  (cost=0.85..9.17 rows=11 width=8) (actual time=0.601..
--- 0.601 rows=0 loops=1)
---                ->  Index Only Scan using resume_skill_set_pkey on resume_skill_s
--- et  (cost=0.42..4.44 rows=1 width=4) (actual time=0.600..0.600 rows=0 loops=1)
---                      Index Cond: (resume_id = 6)
---                      Heap Fetches: 0
---                ->  Index Only Scan using vacancy_skill_set_pkey on vacancy_skill
--- _set  (cost=0.42..4.62 rows=11 width=8) (never executed)
---                      Index Cond: (skill_id = resume_skill_set.skill_id)
---                      Heap Fetches: 0
---          ->  Index Scan using vacancy_pkey on vacancy  (cost=0.42..0.52 rows=1 w
--- idth=8) (never executed)
---                Index Cond: (vacancy_id = vacancy_skill_set.vacancy_id)
---                Filter: (is_active AND (max_salary >= 60000) AND (min_salary >= 4
--- 0000))
---    ->  Index Scan using company_pkey on company  (cost=0.29..7.87 rows=1 width=1
--- 6) (never executed)
---          Index Cond: (company_id = vacancy.company_id)
---  Planning time: 3.289 ms
---  Execution time: 0.682 ms
--- (16 rows)
--- Запрос выполнен эффективно
+
+-- Gather  (cost=1371.42..11415.64 rows=6130 width=19) (actual time=18.411..140.874 rows=1985 loops=1)
+-- Workers Planned: 2
+-- Workers Launched: 2
+-- ->  Hash Join  (cost=371.42..9802.64 rows=2554 width=19) (actual time=15.408..122.850 rows=662 loops=3)
+-- Hash Cond: (vacancy.company_id = company.company_id)
+-- ->  Nested Loop  (cost=12.30..9436.82 rows=2554 width=12) (actual time=0.589..107.366 rows=662 loops=3)
+-- ->  Hash Join  (cost=12.01..8408.74 rows=3181 width=8) (actual time=0.474..101.136 rows=826 loops=3)
+-- Hash Cond: (vacancy_skill_set.skill_id = resume_skill_set.skill_id)
+-- ->  Parallel Seq Scan on vacancy_skill_set  (cost=0.00..7523.94 rows=327494 width=8) (actual time=0.025..48.395 rows=261995 loops=3)
+-- ->  Hash  (cost=11.97..11.97 rows=3 width=4) (actual time=0.077..0.077 rows=2 loops=3)
+-- Buckets: 1024  Batches: 1  Memory Usage: 9kB
+-- ->  Index Only Scan using resume_skill_set_pkey on resume_skill_set  (cost=0.42..11.97 rows=3 width=4) (actual time=0.063..0.067 rows=2 loops=3)
+-- Index Cond: (resume_id = 100005)
+-- Heap Fetches: 2
+-- ->  Index Scan using vacancy_pkey on vacancy  (cost=0.29..0.32 rows=1 width=8) (actual time=0.006..0.006 rows=1 loops=2478)
+-- Index Cond: (vacancy_id = vacancy_skill_set.vacancy_id)
+-- Filter: (is_active AND (max_salary < 600000) AND (min_salary >= 20000))
+-- Rows Removed by Filter: 0
+-- ->  Hash  (cost=234.05..234.05 rows=10005 width=15) (actual time=14.696..14.696 rows=10005 loops=3)
+-- Buckets: 16384  Batches: 1  Memory Usage: 598kB
+-- ->  Seq Scan on company  (cost=0.00..234.05 rows=10005 width=15) (actual time=0.041..5.984 rows=10005 loops=3)
+-- Planning time: 1.901 ms
+-- Execution time: 141.225 ms
+
+-- Запрос выполнен не очень эффективно, это связано с очень селективным использованием индекса skill_id в
+-- таблицах resume_skill_set и vacancy_skill_set. Возможно нет смысла в индексировании
+-- данных полей. Попробуем удалить данные индексы и снова запустить запрос.
+ALTER TABLE resume_skill_set DROP CONSTRAINT resume_skill_set_pkey;
+ALTER TABLE vacancy_skill_set DROP CONSTRAINT vacancy_skill_set_pkey;
+ALTER TABLE resume_skill_set ADD CONSTRAINT resume_skill_set_unique UNIQUE(resume_id, skill_id);
+ALTER TABLE vacancy_skill_set ADD CONSTRAINT vacancy_skill_set_unique UNIQUE(vacancy_id, skill_id);
+
+-- Gather  (cost=1371.42..11415.64 rows=6130 width=19) (actual time=11.787..144.337 rows=1985 loops=1)
+--   Workers Planned: 2
+--   Workers Launched: 2
+--   ->  Hash Join  (cost=371.42..9802.64 rows=2554 width=19) (actual time=16.203..128.310 rows=662 loops=3)
+--         Hash Cond: (vacancy.company_id = company.company_id)
+--         ->  Nested Loop  (cost=12.30..9436.82 rows=2554 width=12) (actual time=0.472..111.880 rows=662 loops=3)
+--               ->  Hash Join  (cost=12.01..8408.74 rows=3181 width=8) (actual time=0.419..105.149 rows=826 loops=3)
+--                     Hash Cond: (vacancy_skill_set.skill_id = resume_skill_set.skill_id)
+--                     ->  Parallel Seq Scan on vacancy_skill_set  (cost=0.00..7523.94 rows=327494 width=8) (actual time=0.027..49.530 rows=261995 loops=3)
+--                     ->  Hash  (cost=11.97..11.97 rows=3 width=4) (actual time=0.069..0.069 rows=2 loops=3)
+--                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
+--                           ->  Index Only Scan using resume_skill_set_unique on resume_skill_set  (cost=0.42..11.97 rows=3 width=4) (actual time=0.057..0.060 rows=2 loops=
+-- 3)
+--                                 Index Cond: (resume_id = 100005)
+--                                 Heap Fetches: 2
+--               ->  Index Scan using vacancy_pkey on vacancy  (cost=0.29..0.32 rows=1 width=8) (actual time=0.007..0.007 rows=1 loops=2478)
+--                     Index Cond: (vacancy_id = vacancy_skill_set.vacancy_id)
+--                     Filter: (is_active AND (max_salary < 600000) AND (min_salary >= 20000))
+--                     Rows Removed by Filter: 0
+--         ->  Hash  (cost=234.05..234.05 rows=10005 width=15) (actual time=13.957..13.957 rows=10005 loops=3)
+--               Buckets: 16384  Batches: 1  Memory Usage: 598kB
+--               ->  Seq Scan on company  (cost=0.00..234.05 rows=10005 width=15) (actual time=0.048..4.881 rows=10005 loops=3)
+-- Planning time: 1.719 ms
+-- Execution time: 144.680 ms
+-- (23 rows)
+
+-- Запрос выполнился за то же время, соответственно, возможно не имеет смысла
+-- создавать индексы на данные поля в таблицах
+
+
+
+
 
 -- I check whether I've got new invitations
 EXPLAIN ANALYZE SELECT vacancy_id
